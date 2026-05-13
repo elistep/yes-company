@@ -5,55 +5,87 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>1 день в YESCOMPANY</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
   <style>
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #111827; color: #fff; user-select: none; touch-action: none; }
-    #game { position: fixed; inset: 0; }
+    html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #10131f; color: #fff; user-select: none; touch-action: none; }
+    #game { position: fixed; inset: 0; overflow: hidden; background: radial-gradient(circle at 20% 10%, rgba(87, 126, 255, .25), transparent 30%), radial-gradient(circle at 70% 90%, rgba(255, 121, 198, .18), transparent 32%), linear-gradient(155deg, #10131f, #1d2031 55%, #0c0e16); }
     canvas { display: block; width: 100%; height: 100%; }
 
-    .screen { position: fixed; inset: 0; z-index: 50; display: none; align-items: center; justify-content: center; padding: 18px; background: radial-gradient(circle at 20% 15%, rgba(59,130,246,.32), transparent 30%), radial-gradient(circle at 85% 20%, rgba(236,72,153,.28), transparent 26%), linear-gradient(145deg, #0f172a, #111827); }
+    .screen { position: fixed; inset: 0; z-index: 80; display: none; align-items: center; justify-content: center; padding: 18px; background: radial-gradient(circle at 30% 20%, rgba(255,255,255,.11), transparent 26%), rgba(12, 14, 22, .76); backdrop-filter: blur(16px); }
     .screen.active { display: flex; }
-    .panel { width: min(720px, 100%); max-height: 92vh; overflow: auto; border: 1px solid rgba(255,255,255,.14); border-radius: 28px; padding: 24px; background: rgba(15,23,42,.78); box-shadow: 0 24px 90px rgba(0,0,0,.42); backdrop-filter: blur(18px); }
-    h1 { margin: 0 0 12px; font-size: clamp(34px, 8vw, 64px); line-height: .95; letter-spacing: -1.6px; }
-    h2 { margin: 0 0 12px; font-size: 28px; }
-    p { margin: 0 0 12px; color: rgba(255,255,255,.78); line-height: 1.5; }
-    .btn { width: 100%; min-height: 52px; border: 0; border-radius: 18px; margin-top: 12px; padding: 12px 16px; background: linear-gradient(135deg, #38bdf8, #8b5cf6); color: white; font-weight: 900; font-size: 16px; cursor: pointer; box-shadow: 0 14px 34px rgba(56,189,248,.23); }
-    .btn:active { transform: scale(.98); }
-    .mini-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 14px 0; }
-    .mini-card { border: 1px solid rgba(255,255,255,.12); border-radius: 18px; padding: 12px; background: rgba(255,255,255,.08); color: rgba(255,255,255,.82); font-size: 14px; line-height: 1.35; }
+    .panel { width: min(720px, 100%); max-height: calc(100vh - 36px); overflow: auto; border: 1px solid rgba(255,255,255,.15); border-radius: 28px; padding: 24px; background: rgba(255,255,255,.10); box-shadow: 0 24px 80px rgba(0,0,0,.42); }
+    h1, h2, p { margin: 0; }
+    h1 { font-size: clamp(34px, 8vw, 64px); line-height: .95; letter-spacing: -2px; margin-bottom: 12px; }
+    h2 { font-size: clamp(24px, 6vw, 36px); line-height: 1.05; margin-bottom: 10px; }
+    .subtitle { color: rgba(255,255,255,.78); line-height: 1.45; font-size: 16px; margin-bottom: 18px; }
+    .rules { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 18px 0; }
+    .rule { border: 1px solid rgba(255,255,255,.12); border-radius: 18px; padding: 12px; background: rgba(255,255,255,.08); color: rgba(255,255,255,.84); font-size: 14px; line-height: 1.36; }
+    .btn { width: 100%; min-height: 52px; margin-top: 12px; border: 0; border-radius: 18px; background: linear-gradient(135deg, #56d364, #2ea043); color: #07120a; font-size: 17px; font-weight: 900; cursor: pointer; box-shadow: 0 14px 30px rgba(46,160,67,.24); }
+    .btn.secondary { background: rgba(255,255,255,.13); color: #fff; border: 1px solid rgba(255,255,255,.15); box-shadow: none; }
+    .btn.danger { background: linear-gradient(135deg, #ff6b6b, #ef4444); color: #fff; }
+    .btn:active { transform: scale(.985); }
 
-    #hud { position: fixed; left: 12px; right: 12px; top: max(10px, env(safe-area-inset-top)); z-index: 10; display: grid; grid-template-columns: 1fr auto; gap: 10px; pointer-events: none; }
-    .hud-left { display: flex; flex-wrap: wrap; gap: 7px; align-items: flex-start; }
-    .pill { min-height: 34px; border: 1px solid rgba(255,255,255,.13); border-radius: 999px; padding: 7px 10px; background: rgba(15,23,42,.68); color: #fff; font-size: 12px; font-weight: 800; backdrop-filter: blur(12px); box-shadow: 0 6px 18px rgba(0,0,0,.18); white-space: nowrap; }
-    .danger { color: #fecaca; }
-    .good { color: #bbf7d0; }
-    .hud-buttons { display: flex; gap: 8px; pointer-events: auto; }
-    .small-btn { width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(255,255,255,.15); background: rgba(15,23,42,.75); color: #fff; font-weight: 900; font-size: 16px; backdrop-filter: blur(12px); cursor: pointer; }
+    #hud { position: fixed; left: 0; right: 0; top: 0; z-index: 30; padding: max(10px, env(safe-area-inset-top)) 10px 8px; display: grid; grid-template-columns: 1fr auto; gap: 8px; pointer-events: none; }
+    .hud-left { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+    .chip { min-height: 34px; display: flex; align-items: center; gap: 4px; padding: 7px 10px; border-radius: 999px; border: 1px solid rgba(255,255,255,.14); background: rgba(11,14,22,.62); backdrop-filter: blur(12px); font-size: 12px; font-weight: 850; white-space: nowrap; box-shadow: 0 8px 20px rgba(0,0,0,.16); }
+    .chip strong { font-size: 13px; }
+    .chip.good { border-color: rgba(86,211,100,.35); }
+    .chip.bad { border-color: rgba(248,81,73,.35); }
+    .chip.warn { border-color: rgba(255,196,0,.35); }
+    #clockChip { justify-self: end; min-width: 84px; justify-content: center; font-size: 15px; }
 
-    #log { position: fixed; left: 12px; right: 12px; bottom: calc(16px + env(safe-area-inset-bottom)); z-index: 8; min-height: 54px; max-height: 96px; overflow: hidden; border: 1px solid rgba(255,255,255,.12); border-radius: 18px; padding: 10px 12px; background: rgba(15,23,42,.72); color: rgba(255,255,255,.9); font-size: 13px; line-height: 1.35; backdrop-filter: blur(14px); pointer-events: none; }
-    #hint { position: fixed; left: 50%; bottom: calc(122px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 11; display: none; border-radius: 999px; padding: 9px 14px; background: rgba(17,24,39,.82); border: 1px solid rgba(255,255,255,.14); color: #fff; font-size: 13px; font-weight: 900; backdrop-filter: blur(12px); pointer-events: none; box-shadow: 0 12px 34px rgba(0,0,0,.25); }
+    #mission { position: fixed; left: 10px; top: 76px; z-index: 28; max-width: min(420px, calc(100vw - 20px)); padding: 10px 12px; border-radius: 18px; border: 1px solid rgba(255,255,255,.13); background: rgba(11,14,22,.55); backdrop-filter: blur(12px); color: rgba(255,255,255,.85); font-size: 13px; line-height: 1.35; pointer-events: none; }
 
-    #mobileControls { position: fixed; inset: 0; z-index: 15; pointer-events: none; display: none; }
-    #joyBase { position: absolute; left: 20px; bottom: calc(116px + env(safe-area-inset-bottom)); width: 116px; height: 116px; border-radius: 50%; background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.14); backdrop-filter: blur(10px); pointer-events: auto; }
-    #joyKnob { position: absolute; left: 35px; top: 35px; width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,.82); box-shadow: 0 8px 20px rgba(0,0,0,.28); }
-    .mobile-action { position: absolute; right: 18px; bottom: calc(128px + env(safe-area-inset-bottom)); width: 84px; height: 84px; border-radius: 50%; border: 0; background: linear-gradient(135deg, #f97316, #ef4444); color: white; font-size: 14px; font-weight: 950; box-shadow: 0 15px 34px rgba(239,68,68,.34); pointer-events: auto; }
-    .mobile-tablet { position: absolute; right: 112px; bottom: calc(142px + env(safe-area-inset-bottom)); width: 58px; height: 58px; border-radius: 50%; border: 1px solid rgba(255,255,255,.14); background: rgba(15,23,42,.82); color: white; font-size: 13px; font-weight: 900; pointer-events: auto; }
-    @media (pointer: coarse) { #mobileControls { display: block; } #log { bottom: calc(16px + env(safe-area-inset-bottom)); left: 154px; right: 112px; min-height: 76px; } }
-    @media (max-width: 680px) { #hud { grid-template-columns: 1fr; } .hud-buttons { justify-self: end; } .pill { font-size: 11px; min-height: 31px; padding: 6px 9px; } #log { font-size: 12px; } }
-    @media (max-width: 430px) { .panel { padding: 18px; border-radius: 24px; } .mini-grid { grid-template-columns: 1fr; } #log { left: 12px; right: 12px; bottom: calc(14px + env(safe-area-inset-bottom)); min-height: 58px; } #joyBase { bottom: calc(88px + env(safe-area-inset-bottom)); width: 98px; height: 98px; } #joyKnob { left: 30px; top: 30px; width: 38px; height: 38px; } .mobile-action { bottom: calc(98px + env(safe-area-inset-bottom)); width: 72px; height: 72px; } .mobile-tablet { right: 100px; bottom: calc(108px + env(safe-area-inset-bottom)); width: 52px; height: 52px; } #hint { bottom: calc(180px + env(safe-area-inset-bottom)); } }
+    #toast { position: fixed; left: 50%; top: 118px; z-index: 90; transform: translateX(-50%) translateY(-10px); max-width: min(540px, calc(100vw - 24px)); padding: 10px 14px; border-radius: 999px; background: rgba(255,255,255,.14); color: #fff; font-size: 13px; font-weight: 800; text-align: center; opacity: 0; pointer-events: none; backdrop-filter: blur(12px); transition: opacity .18s ease, transform .18s ease; }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-    .modal { position: fixed; inset: 0; z-index: 45; display: none; align-items: center; justify-content: center; padding: 16px; background: rgba(2,6,23,.58); backdrop-filter: blur(10px); }
-    .modal.active { display: flex; }
-    .dialog { width: min(560px, 100%); border: 1px solid rgba(255,255,255,.16); border-radius: 24px; padding: 18px; background: rgba(15,23,42,.94); box-shadow: 0 26px 90px rgba(0,0,0,.42); }
-    .dialog h3 { margin: 0 0 8px; font-size: 22px; }
-    .dialog p { margin: 0 0 14px; color: rgba(255,255,255,.76); font-size: 14px; line-height: 1.45; }
-    .choice { width: 100%; border: 1px solid rgba(255,255,255,.12); border-radius: 16px; margin: 8px 0; padding: 12px; background: rgba(255,255,255,.08); color: #fff; text-align: left; font-size: 14px; font-weight: 750; cursor: pointer; }
-    .choice:active { transform: scale(.985); }
-    .status-lines { display: grid; gap: 8px; margin-top: 12px; }
-    .bar { height: 10px; border-radius: 999px; background: rgba(255,255,255,.1); overflow: hidden; }
-    .bar > span { display: block; height: 100%; width: 50%; background: linear-gradient(90deg, #22c55e, #38bdf8); border-radius: inherit; }
-    .error { color: #fecaca; font-weight: 800; }
+    .label { position: fixed; z-index: 25; transform: translate(-50%, -100%); padding: 5px 8px; border-radius: 999px; background: rgba(14,17,26,.72); border: 1px solid rgba(255,255,255,.13); color: #fff; font-size: 11px; font-weight: 850; white-space: nowrap; pointer-events: none; text-shadow: 0 1px 2px rgba(0,0,0,.5); box-shadow: 0 8px 18px rgba(0,0,0,.16); }
+    .label.problem { background: rgba(255, 101, 101, .76); }
+    .label.client { background: rgba(67, 128, 255, .76); }
+    .label.player { background: rgba(86, 211, 100, .74); }
+
+    #interactHint { position: fixed; left: 50%; bottom: 108px; z-index: 38; transform: translateX(-50%); display: none; padding: 10px 14px; border-radius: 999px; background: rgba(255,255,255,.14); color: #fff; border: 1px solid rgba(255,255,255,.14); backdrop-filter: blur(14px); font-size: 13px; font-weight: 900; pointer-events: none; }
+    #interactHint.show { display: block; }
+
+    #joystick { position: fixed; left: max(16px, env(safe-area-inset-left)); bottom: max(18px, env(safe-area-inset-bottom)); z-index: 35; width: 120px; height: 120px; border-radius: 50%; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.09); backdrop-filter: blur(10px); touch-action: none; }
+    #joystickKnob { position: absolute; left: 50%; top: 50%; width: 54px; height: 54px; border-radius: 50%; transform: translate(-50%, -50%); background: rgba(255,255,255,.28); box-shadow: inset 0 -8px 18px rgba(0,0,0,.18), 0 8px 22px rgba(0,0,0,.22); }
+    .action-stack { position: fixed; right: max(16px, env(safe-area-inset-right)); bottom: max(18px, env(safe-area-inset-bottom)); z-index: 35; display: grid; gap: 10px; }
+    .round-btn { width: 76px; height: 76px; border-radius: 50%; border: 1px solid rgba(255,255,255,.15); color: #fff; background: rgba(255,255,255,.13); backdrop-filter: blur(12px); font-size: 12px; font-weight: 950; cursor: pointer; box-shadow: 0 12px 28px rgba(0,0,0,.22); }
+    .round-btn.primary { background: linear-gradient(135deg, #ffbf2f, #ff7b00); color: #1f1300; }
+    .round-btn:active { transform: scale(.96); }
+
+    #modal { position: fixed; inset: 0; z-index: 70; display: none; align-items: flex-end; justify-content: center; padding: 18px; background: rgba(7,9,14,.30); backdrop-filter: blur(4px); }
+    #modal.active { display: flex; }
+    .dialog { width: min(620px, 100%); max-height: calc(100vh - 36px); overflow: auto; border: 1px solid rgba(255,255,255,.16); border-radius: 26px; padding: 18px; background: rgba(18,22,33,.94); box-shadow: 0 24px 80px rgba(0,0,0,.45); }
+    .dialog-title { font-size: 24px; font-weight: 950; margin-bottom: 8px; letter-spacing: -.4px; }
+    .dialog-text { color: rgba(255,255,255,.78); font-size: 15px; line-height: 1.45; margin-bottom: 14px; }
+    .choice { width: 100%; min-height: 48px; display: block; margin-top: 8px; text-align: left; border: 1px solid rgba(255,255,255,.13); border-radius: 16px; padding: 12px 14px; background: rgba(255,255,255,.09); color: #fff; font-size: 14px; font-weight: 760; cursor: pointer; }
+    .choice:active { transform: scale(.99); }
+    .dialog-close { width: 100%; min-height: 44px; margin-top: 10px; border: 0; border-radius: 15px; background: rgba(255,255,255,.10); color: rgba(255,255,255,.82); font-weight: 850; cursor: pointer; }
+
+    #tabletPanel { position: fixed; right: 12px; top: 78px; z-index: 50; width: min(360px, calc(100vw - 24px)); display: none; border: 1px solid rgba(255,255,255,.14); border-radius: 22px; padding: 14px; background: rgba(18,22,33,.92); backdrop-filter: blur(14px); box-shadow: 0 20px 60px rgba(0,0,0,.36); }
+    #tabletPanel.active { display: block; }
+    #tabletPanel h3 { margin: 0 0 8px; font-size: 18px; }
+    #tabletPanel p { color: rgba(255,255,255,.74); font-size: 13px; line-height: 1.4; margin: 0 0 8px; }
+    .mini-table { width: 100%; border-collapse: collapse; font-size: 12px; overflow: hidden; border-radius: 12px; }
+    .mini-table th, .mini-table td { border-bottom: 1px solid rgba(255,255,255,.10); text-align: left; padding: 7px 5px; color: rgba(255,255,255,.82); }
+    .mini-table th { color: #fff; }
+
+    .kbd { display: inline-block; min-width: 22px; padding: 2px 6px; border-radius: 7px; border: 1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.10); font-size: 12px; font-weight: 900; text-align: center; }
+
+    @media (max-width: 640px) {
+      .rules { grid-template-columns: 1fr; }
+      .panel { padding: 18px; border-radius: 24px; }
+      #hud { grid-template-columns: 1fr; padding-right: 8px; }
+      #clockChip { justify-self: start; }
+      #mission { top: 116px; font-size: 12px; max-width: calc(100vw - 20px); }
+      #joystick { width: 104px; height: 104px; }
+      #joystickKnob { width: 48px; height: 48px; }
+      .round-btn { width: 68px; height: 68px; font-size: 11px; }
+      #interactHint { bottom: 96px; font-size: 12px; max-width: calc(100vw - 170px); text-align: center; }
+      .chip { font-size: 11px; min-height: 31px; padding: 6px 8px; }
+      #toast { top: 156px; border-radius: 18px; }
+    }
   </style>
 </head>
 <body>
@@ -61,1117 +93,1138 @@
 
   <div id="hud" style="display:none">
     <div class="hud-left">
-      <div class="pill">🕘 <span id="timeText">09:00</span></div>
-      <div class="pill">🧠 нервы: <span id="nervesText">100</span></div>
-      <div class="pill">⭐ репутация: <span id="repText">100</span></div>
-      <div class="pill danger">🔥 хаос: <span id="chaosText">0</span></div>
-      <div class="pill good">📝 записи: <span id="recordsText">0</span></div>
-      <div class="pill good">💳 оплаты: <span id="paymentsText">0</span></div>
-      <div class="pill danger">🚪 ушли: <span id="lostText">0</span></div>
+      <div class="chip good">Нервы: <strong id="nervesVal">100</strong></div>
+      <div class="chip good">Репутация: <strong id="repVal">100</strong></div>
+      <div class="chip warn">Хаос: <strong id="chaosVal">18</strong></div>
+      <div class="chip">Записи: <strong id="recordsVal">0</strong>/10</div>
+      <div class="chip">Оплаты: <strong id="paymentsVal">0</strong>/5</div>
+      <div class="chip bad">Ушли: <strong id="lostVal">0</strong>/3</div>
     </div>
-    <div class="hud-buttons">
-      <button id="tabletBtn" class="small-btn" type="button">▣</button>
-      <button id="pauseBtn" class="small-btn" type="button">Ⅱ</button>
-    </div>
+    <div id="clockChip" class="chip">09:00</div>
   </div>
 
-  <div id="hint">E: взаимодействовать</div>
-  <div id="log">Готовься: сегодня Эля одна против офиса.</div>
+  <div id="mission" style="display:none">
+    Цель: пережить день, записать 10 детей, собрать 5 оплат, не дать YESCOMPANY развалиться. Подойди к клиенту или сотруднику с «!» и нажми действие.
+  </div>
 
-  <div id="mobileControls">
-    <div id="joyBase"><div id="joyKnob"></div></div>
-    <button id="mobileTablet" class="mobile-tablet" type="button">План</button>
-    <button id="mobileAction" class="mobile-action" type="button">ДЕЛО</button>
+  <div id="toast"></div>
+  <div id="interactHint">Действие</div>
+
+  <div id="joystick" style="display:none"><div id="joystickKnob"></div></div>
+  <div class="action-stack" style="display:none" id="actionStack">
+    <button id="tabletBtn" class="round-btn" type="button">Планшет</button>
+    <button id="actionBtn" class="round-btn primary" type="button">Действие</button>
   </div>
 
   <section id="startScreen" class="screen active">
     <div class="panel">
       <h1>1 день в YESCOMPANY</h1>
-      <p>Ты играешь за Элю. Нужно пережить один рабочий день: записывать детей на английский, отвечать клиентам, прикрывать Настю и Свету, когда они курят, ловить Пашу, переживать юристку и не довести офис до апокалипсиса.</p>
-      <div class="mini-grid">
-        <div class="mini-card"><b>ПК:</b><br>WASD / стрелки — движение<br>E — действие<br>Tab — планшет<br>Space — ускорение</div>
-        <div class="mini-card"><b>Телефон:</b><br>джойстик слева<br>кнопка «ДЕЛО» справа<br>кнопка «План» для карты и задач</div>
-        <div class="mini-card"><b>Цель:</b><br>записать 10 детей, собрать 5 оплат, не потерять клиентов и нервы.</div>
-        <div class="mini-card"><b>Опасности:</b><br>Петрова, Голубев, Палади, юристка, Рита Баранова, Завхоз и Паша рядом с Дашей.</div>
+      <p class="subtitle">3D-симулятор рабочего дня. Ты играешь за Элю, администратора языковой школы. Клиенты хотят записать детей на английский, сотрудники создают хаос, директор требует результат. Нужно выжить до 20:00.</p>
+      <div class="rules">
+        <div class="rule"><b>Клиенты</b><br>Подходи к родителям и подбирай правильную группу по возрасту, уровню и времени.</div>
+        <div class="rule"><b>Сотрудники</b><br>Если над NPC горит «!», значит опять что-то случилось. Лучше решить быстро.</div>
+        <div class="rule"><b>Проигрыш</b><br>Нервы на нуле, репутация на нуле, хаос 100% или ушло больше 3 клиентов.</div>
+        <div class="rule"><b>Управление</b><br><span class="kbd">WASD</span> / стрелки — идти, <span class="kbd">E</span> — действие, <span class="kbd">Tab</span> — планшет. На телефоне — джойстик и кнопки.</div>
       </div>
       <button id="startBtn" class="btn" type="button">Начать смену</button>
-      <p id="webglError" class="error" style="display:none; margin-top:12px">Three.js не загрузился. Проверь интернет: игра использует WebGL-библиотеку из CDN.</p>
     </div>
   </section>
 
   <section id="endScreen" class="screen">
     <div class="panel">
-      <h2 id="endTitle">Смена закончена</h2>
-      <p id="endText"></p>
-      <div class="status-lines">
-        <div>Нервы Эли<div class="bar"><span id="barNerves"></span></div></div>
-        <div>Репутация<div class="bar"><span id="barRep"></span></div></div>
-        <div>Хаос офиса<div class="bar"><span id="barChaos"></span></div></div>
-      </div>
-      <button id="restartBtn" class="btn" type="button">Пройти ещё раз</button>
+      <h2 id="endTitle">День завершён</h2>
+      <p id="endText" class="subtitle"></p>
+      <div class="rules" id="endStats"></div>
+      <button id="restartBtn" class="btn" type="button">Начать день заново</button>
     </div>
   </section>
 
-  <div id="choiceModal" class="modal">
+  <div id="modal">
     <div class="dialog">
-      <h3 id="dialogTitle">Событие</h3>
-      <p id="dialogText">Описание</p>
-      <div id="choices"></div>
+      <div id="modalTitle" class="dialog-title"></div>
+      <div id="modalText" class="dialog-text"></div>
+      <div id="modalChoices"></div>
+      <button id="modalClose" class="dialog-close" type="button">Закрыть</button>
     </div>
   </div>
 
-  <div id="tabletModal" class="modal">
-    <div class="dialog">
-      <h3>План YESCOMPANY</h3>
-      <p id="tabletText"></p>
-      <button id="closeTablet" class="choice" type="button">Закрыть</button>
-    </div>
+  <div id="tabletPanel">
+    <h3>Планшет Эли</h3>
+    <p>Подбирай группу по трём признакам: возраст, уровень, удобное время.</p>
+    <table class="mini-table">
+      <thead><tr><th>Группа</th><th>Время</th><th>Препод</th></tr></thead>
+      <tbody id="scheduleBody"></tbody>
+    </table>
+    <button id="closeTabletBtn" class="btn secondary" type="button">Закрыть</button>
   </div>
 
-<script>
-(() => {
-  const tg = window.Telegram?.WebApp;
-  if (tg) { tg.ready(); tg.expand(); }
+  <script type="module">
+    import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
 
-  const startScreen = document.getElementById('startScreen');
-  const endScreen = document.getElementById('endScreen');
-  const startBtn = document.getElementById('startBtn');
-  const restartBtn = document.getElementById('restartBtn');
-  const hud = document.getElementById('hud');
-  const logEl = document.getElementById('log');
-  const hintEl = document.getElementById('hint');
-  const choiceModal = document.getElementById('choiceModal');
-  const dialogTitle = document.getElementById('dialogTitle');
-  const dialogText = document.getElementById('dialogText');
-  const choicesEl = document.getElementById('choices');
-  const tabletModal = document.getElementById('tabletModal');
-  const tabletText = document.getElementById('tabletText');
-  const closeTablet = document.getElementById('closeTablet');
-  const webglError = document.getElementById('webglError');
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+      tg.MainButton?.hide?.();
+    }
 
-  if (!window.THREE) {
-    webglError.style.display = 'block';
-  }
+    const GAME_DURATION = 240;
+    const MAP_LIMIT_X = 12;
+    const MAP_LIMIT_Z = 8;
+    const INTERACT_RADIUS = 2.05;
+    const CLIENT_PATIENCE = 42;
 
-  let renderer, scene, camera, clock;
-  let player, playerSpeed = 4.1;
-  let gameStarted = false;
-  let paused = false;
-  let ended = false;
-  let interactionLock = false;
-  let lastEventAt = 0;
-  let lastClientAt = 0;
-  let spawnCounter = 0;
+    const groups = [
+      { id: "kids-start", title: "5–6 лет / Starter / 17:00", ageMin: 5, ageMax: 6, level: "с нуля", time: "17:00", teacher: "Барсукова" },
+      { id: "junior-beginner", title: "7–9 лет / Beginner / 18:00", ageMin: 7, ageMax: 9, level: "начинающий", time: "18:00", teacher: "Даша" },
+      { id: "junior-elementary", title: "10–12 лет / Elementary / 16:00", ageMin: 10, ageMax: 12, level: "есть база", time: "16:00", teacher: "Света" },
+      { id: "exam", title: "ОГЭ / интенсив / 15:30", ageMin: 14, ageMax: 16, level: "ОГЭ", time: "15:30", teacher: "Палади" },
+      { id: "speaking", title: "12–15 лет / Speaking club / 19:00", ageMin: 12, ageMax: 15, level: "говорить", time: "19:00", teacher: "Даша" },
+      { id: "preteen", title: "9–11 лет / Pre-Intermediate / 18:30", ageMin: 9, ageMax: 11, level: "уверенная база", time: "18:30", teacher: "Света" }
+    ];
 
-  const keys = new Set();
-  const moveVec = { x: 0, z: 0 };
-  const joystick = { active: false, id: null, x: 0, y: 0, dx: 0, dy: 0 };
+    const clientPool = [
+      { title: "Мама дошкольника", age: 5, level: "с нуля", time: "17:00", correct: "kids-start", line: "Нам английский с нуля, но чтобы ребёнок быстро заговорил." },
+      { title: "Папа третьеклассника", age: 8, level: "начинающий", time: "18:00", correct: "junior-beginner", line: "Нужна группа после школы, без перегруза." },
+      { title: "Мама после другой школы", age: 11, level: "есть база", time: "16:00", correct: "junior-elementary", line: "Мы уже ходили, но хотим нормальную программу." },
+      { title: "Родитель ОГЭ", age: 15, level: "ОГЭ", time: "15:30", correct: "exam", line: "Надо подготовиться к экзамену, желательно вчера." },
+      { title: "Бабушка разговорного клуба", age: 13, level: "говорить", time: "19:00", correct: "speaking", line: "Главное, чтобы ребёнок начал говорить, а не только тетрадь заполнял." },
+      { title: "Мама уверенного школьника", age: 10, level: "уверенная база", time: "18:30", correct: "preteen", line: "Ребёнок не новичок, нужна группа посильнее." }
+    ];
 
-  const stats = {
-    nerves: 100,
-    reputation: 100,
-    chaos: 0,
-    records: 0,
-    payments: 0,
-    lost: 0,
-    suspicion: 0,
-    cover: 100,
-    conflictsSolved: 0,
-    pashaFixed: 0,
-    zavhozOk: 0
-  };
+    const colors = {
+      elya: 0x38bdf8,
+      nastya: 0xff75b6,
+      sveta: 0xf6d365,
+      dasha: 0x6b7280,
+      golubev: 0x3b82f6,
+      anyaPetrova: 0xa78bfa,
+      paladi: 0xef4444,
+      barsukova: 0x64748b,
+      annaLawyer: 0xf59e0b,
+      pasha: 0x22c55e,
+      sasha: 0x8b5cf6,
+      client: 0xffb86b
+    };
 
-  const state = {
-    gameSeconds: 0,
-    dayMinutes: 9 * 60,
-    smoking: false,
-    smokingUntil: 0,
-    petrovnaPresent: false,
-    legalInToilet: false,
-    activeClient: null,
-    events: [],
-    clients: [],
-    entities: {},
-    labels: [],
-    interactables: []
-  };
+    const gameRoot = document.getElementById("game");
+    const hud = document.getElementById("hud");
+    const mission = document.getElementById("mission");
+    const joystick = document.getElementById("joystick");
+    const joystickKnob = document.getElementById("joystickKnob");
+    const actionStack = document.getElementById("actionStack");
+    const startScreen = document.getElementById("startScreen");
+    const endScreen = document.getElementById("endScreen");
+    const startBtn = document.getElementById("startBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const toastEl = document.getElementById("toast");
+    const hintEl = document.getElementById("interactHint");
+    const actionBtn = document.getElementById("actionBtn");
+    const tabletBtn = document.getElementById("tabletBtn");
+    const tabletPanel = document.getElementById("tabletPanel");
+    const closeTabletBtn = document.getElementById("closeTabletBtn");
+    const scheduleBody = document.getElementById("scheduleBody");
+    const modal = document.getElementById("modal");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalText = document.getElementById("modalText");
+    const modalChoices = document.getElementById("modalChoices");
+    const modalClose = document.getElementById("modalClose");
 
-  const groupOptions = [
-    { id: 'g1', text: '5–6 лет / Starter / 17:00 / Барсукова', ageMin: 5, ageMax: 6, level: 'starter', time: 'вечер', teacher: 'barsukova' },
-    { id: 'g2', text: '7–9 лет / Beginner / 18:00 / Даша', ageMin: 7, ageMax: 9, level: 'beginner', time: 'вечер', teacher: 'dasha' },
-    { id: 'g3', text: '10–12 лет / Elementary / 16:00 / Палади', ageMin: 10, ageMax: 12, level: 'elementary', time: 'день', teacher: 'paladi' },
-    { id: 'g4', text: 'ОГЭ / Pre-Intermediate / 19:00 / Света', ageMin: 13, ageMax: 17, level: 'exam', time: 'вечер', teacher: 'sveta' },
-    { id: 'g5', text: 'Индивидуально / логопедический кабинет / 15:00', ageMin: 5, ageMax: 11, level: 'special', time: 'день', teacher: 'logoped' }
-  ];
+    const ui = {
+      nerves: document.getElementById("nervesVal"),
+      rep: document.getElementById("repVal"),
+      chaos: document.getElementById("chaosVal"),
+      records: document.getElementById("recordsVal"),
+      payments: document.getElementById("paymentsVal"),
+      lost: document.getElementById("lostVal"),
+      clock: document.getElementById("clockChip"),
+      endTitle: document.getElementById("endTitle"),
+      endText: document.getElementById("endText"),
+      endStats: document.getElementById("endStats")
+    };
 
-  const rooms = {
-    dressing: { label: 'Раздевалка', x: -13.2, z: -4.9, w: 4.8, h: 1.65, color: 0xfef3c7 },
-    toilet1: { label: 'Туалет 1', x: -14.0, z: -2.85, w: 3.2, h: 1.35, color: 0xdbeafe },
-    toilet2: { label: 'Туалет 2', x: -14.0, z: -1.38, w: 3.2, h: 1.35, color: 0xdbeafe },
-    smallCorridor: { label: 'Коридор', x: -10.2, z: -2.08, w: 1.65, h: 2.98, color: 0xe5e7eb },
-    logoped: { label: 'Кабинет логопеда', x: -12.4, z: 2.25, w: 4.8, h: 5.0, color: 0xfce7f3 },
-    cab1: { label: 'Кабинет №1', x: -6.1, z: -6.7, w: 5.4, h: 2.25, color: 0xecfeff },
-    cab2: { label: 'Кабинет №2', x: -0.8, z: -6.7, w: 3.75, h: 2.25, color: 0xf0fdf4 },
-    cab3: { label: 'Кабинет №3', x: 3.0, z: -6.7, w: 3.75, h: 2.25, color: 0xfffbeb },
-    legal: { label: 'Каб. юриста', x: 6.75, z: -6.7, w: 3.65, h: 2.25, color: 0xf5f3ff },
-    senior: { label: 'Каб. ст. преп.', x: 10.4, z: -6.7, w: 3.65, h: 2.25, color: 0xe0f2fe },
-    cleaning: { label: 'Клад. уборки', x: 13.55, z: -4.85, w: 1.45, h: 1.45, color: 0xe7e5e4 },
-    mainCorridor: { label: 'КОРИДОР', x: 1.45, z: -3.96, w: 23.0, h: 1.1, color: 0xe5e7eb },
-    reception: { label: 'РЕСЕПШН', x: -5.95, z: 1.55, w: 8.9, h: 9.7, color: 0xfef2f2 },
-    waiting: { label: 'Зона ожидания', x: -0.9, z: 1.55, w: 1.75, h: 9.7, color: 0xfef9c3, vertical: true },
-    cab4: { label: 'Кабинет №4', x: 3.25, z: 1.55, w: 6.55, h: 9.7, color: 0xecfccb },
-    zavhoz: { label: 'Кладовка завхоза', x: 9.65, z: 1.55, w: 5.55, h: 9.7, color: 0xffedd5 },
-    outside: { label: 'УЛИЦА / перекур', x: -3.4, z: 7.65, w: 7.5, h: 2.0, color: 0xd1fae5 }
-  };
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x10131f);
+    scene.fog = new THREE.Fog(0x10131f, 14, 38);
 
-  const places = {
-    entrance: { x: -3.4, z: 6.7 },
-    outside: { x: -3.3, z: 8.25 },
-    smoke: { x: -6.1, z: 8.15 },
-    desk: { x: -6.0, z: 3.9 },
-    receptionFront: { x: -4.5, z: 2.8 },
-    waiting: { x: -1.0, z: 1.3 },
-    legal: { x: 6.75, z: -6.65 },
-    toilet1: { x: -14.1, z: -2.85 },
-    toilet2: { x: -14.1, z: -1.35 },
-    cab1: { x: -6.1, z: -6.75 },
-    cab2: { x: -0.8, z: -6.75 },
-    cab3: { x: 3.0, z: -6.75 },
-    senior: { x: 10.4, z: -6.7 },
-    cab4: { x: 3.25, z: 1.55 },
-    zavhoz: { x: 9.65, z: 1.55 },
-    tech: { x: -7.6, z: 2.4 },
-    corridor: { x: 0.8, z: -3.95 }
-  };
-
-  function initThree() {
-    scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x111827);
-    clock = new THREE.Clock();
-
-    const container = document.getElementById('game');
-    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: "high-performance" });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.7));
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    container.innerHTML = '';
-    container.appendChild(renderer.domElement);
+    gameRoot.appendChild(renderer.domElement);
 
-    camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 120);
-    camera.position.set(0, 19, 14);
-    camera.lookAt(0, 0, 0);
+    const camera = new THREE.PerspectiveCamera(48, window.innerWidth / window.innerHeight, 0.1, 100);
 
-    const hemi = new THREE.HemisphereLight(0xffffff, 0x334155, 2.1);
-    scene.add(hemi);
-    const dir = new THREE.DirectionalLight(0xffffff, 1.3);
-    dir.position.set(-7, 14, 8);
-    dir.castShadow = true;
-    dir.shadow.camera.left = -25; dir.shadow.camera.right = 25; dir.shadow.camera.top = 20; dir.shadow.camera.bottom = -15;
-    scene.add(dir);
+    const ambient = new THREE.HemisphereLight(0xffffff, 0x334155, 1.35);
+    scene.add(ambient);
+    const keyLight = new THREE.DirectionalLight(0xffffff, 2.15);
+    keyLight.position.set(8, 14, 10);
+    keyLight.castShadow = true;
+    keyLight.shadow.mapSize.width = 1536;
+    keyLight.shadow.mapSize.height = 1536;
+    keyLight.shadow.camera.near = 1;
+    keyLight.shadow.camera.far = 40;
+    keyLight.shadow.camera.left = -18;
+    keyLight.shadow.camera.right = 18;
+    keyLight.shadow.camera.top = 18;
+    keyLight.shadow.camera.bottom = -18;
+    scene.add(keyLight);
 
-    buildOffice();
-    buildCharacters();
-    buildProps();
-    createPlayer();
-    window.addEventListener('resize', onResize);
-  }
+    const state = {
+      running: false,
+      elapsed: 0,
+      lastTime: 0,
+      spawnTimer: 5,
+      problemTimer: 13,
+      stats: { nerves: 100, rep: 100, chaos: 18, records: 0, payments: 0, lost: 0 },
+      clients: [],
+      npcs: [],
+      labels: [],
+      keys: new Set(),
+      joy: { active: false, id: null, x: 0, y: 0, baseX: 0, baseY: 0 },
+      tabletOpen: false,
+      modalOpen: false,
+      nearest: null
+    };
 
-  function material(color, rough = 0.75) {
-    return new THREE.MeshStandardMaterial({ color, roughness: rough, metalness: 0.02 });
-  }
+    let player;
+    const pashaHome = new THREE.Vector3(-1.4, 0, -2.1);
 
-  function buildOffice() {
-    const base = new THREE.Mesh(new THREE.BoxGeometry(32, 0.08, 19), material(0x64748b));
-    base.position.set(0, -0.08, 0.2);
-    base.receiveShadow = true;
-    scene.add(base);
+    initWorld();
+    fillSchedule();
+    bindEvents();
+    animate(0);
 
-    Object.values(rooms).forEach(room => createRoom(room));
-    createDoorMarkers();
-  }
+    function initWorld() {
+      const floorMat = new THREE.MeshStandardMaterial({ color: 0x273244, roughness: 0.9, metalness: 0.02 });
+      const floor = new THREE.Mesh(new THREE.BoxGeometry(25, 0.28, 17), floorMat);
+      floor.position.y = -0.16;
+      floor.receiveShadow = true;
+      scene.add(floor);
 
-  function createRoom(room) {
-    const floor = new THREE.Mesh(new THREE.BoxGeometry(room.w, 0.06, room.h), material(room.color));
-    floor.position.set(room.x, 0, room.z);
-    floor.receiveShadow = true;
-    scene.add(floor);
+      addGridLines();
+      addOfficeZones();
+      addFurniture();
 
-    const wallMat = material(0x1f2937);
-    const t = 0.08;
-    const h = 0.45;
-    addWall(room.x, room.z - room.h / 2, room.w, t, h, wallMat);
-    addWall(room.x, room.z + room.h / 2, room.w, t, h, wallMat);
-    addWall(room.x - room.w / 2, room.z, t, room.h, h, wallMat);
-    addWall(room.x + room.w / 2, room.z, t, room.h, h, wallMat);
+      player = createPerson("Эля", colors.elya, 0xffffff, 1.05);
+      player.position.set(-4.4, 0, -5.7);
+      player.userData.kind = "player";
+      scene.add(player);
+      makeLabel(player, "Эля", "player");
 
-    const label = createTextSprite(room.label, { fontSize: room.vertical ? 44 : 48, bg: 'rgba(255,255,255,0.72)', color: '#111827', padding: 18 });
-    label.position.set(room.x, 0.15, room.z);
-    label.scale.set(room.vertical ? 1.1 : Math.min(2.8, room.w * 0.36), 0.42, 1);
-    if (room.vertical) label.material.rotation = Math.PI / 2;
-    scene.add(label);
-  }
+      createNpc("Настя", colors.nastya, -5.2, -5.2, "Старший администратор");
+      createNpc("Света", colors.sveta, 7.15, 5.45, "Старший преподаватель");
+      createNpc("Даша", colors.dasha, -5.25, 5.45, "Преподаватель");
+      createNpc("Голубев", colors.golubev, 4.45, 5.45, "Директор");
+      createNpc("Аня Петрова", colors.anyaPetrova, -3.1, -5.4, "Замдиректора");
+      createNpc("Палади", colors.paladi, -1.35, 5.45, "Новый преподаватель");
+      createNpc("Барсукова", colors.barsukova, 1.55, 5.45, "Грустный преподаватель");
+      createNpc("Анна", colors.annaLawyer, 4.45, 6.65, "Юрист");
+      createNpc("Паша", colors.pasha, -1.4, -2.1, "Приходящий айтишник");
+      createNpc("Саша", colors.sasha, 9.55, -5.7, "Завхоз");
+    }
 
-  function addWall(x, z, w, d, h, mat) {
-    const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
-    mesh.position.set(x, h / 2, z);
-    mesh.castShadow = true;
-    mesh.receiveShadow = true;
-    scene.add(mesh);
-  }
+    function addGridLines() {
+      const lineMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.09 });
+      for (let x = -12; x <= 12; x += 2) {
+        const geo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(x, 0.01, -8), new THREE.Vector3(x, 0.01, 8)]);
+        scene.add(new THREE.Line(geo, lineMat));
+      }
+      for (let z = -8; z <= 8; z += 2) {
+        const geo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-12, 0.01, z), new THREE.Vector3(12, 0.01, z)]);
+        scene.add(new THREE.Line(geo, lineMat));
+      }
+    }
 
-  function createDoorMarkers() {
-    const doorMat = material(0xf59e0b);
-    const doors = [
-      [-8.4, -3.95, 1.0, 0.08], [-5.6, -4.55, 1.0, 0.08], [-0.8, -5.55, 0.85, 0.08], [3.0, -5.55, 0.85, 0.08],
-      [6.75, -5.55, 0.85, 0.08], [10.4, -5.55, 0.85, 0.08], [-10.1, -4.0, 0.08, 0.75], [-10.1, -0.2, 0.08, 0.75],
-      [-3.4, 6.4, 1.2, 0.08], [-1.8, -3.95, 0.9, 0.08], [3.25, -3.95, 0.9, 0.08], [9.65, -3.95, 0.9, 0.08]
-    ];
-    doors.forEach(d => {
-      const mesh = new THREE.Mesh(new THREE.BoxGeometry(d[2], 0.09, d[3]), doorMat);
-      mesh.position.set(d[0], 0.24, d[1]);
+    function addOfficeZones() {
+      // Карта перерисована по схеме пользователя, но 3D-стиль первой версии сохранён.
+      // Координаты: X — слева направо, Z — снизу вверх. Вход снизу.
+      zone("Ресепшн", -3.75, -3.15, 8.1, 9.35, 0x2dd4bf);
+      zone("Зона ожидания", 1.15, -3.15, 1.35, 9.35, 0x60a5fa);
+      zone("Кабинет №4", 4.65, -3.15, 4.35, 9.35, 0x94a3b8);
+      zone("Кладовка завхоза", 9.55, -3.15, 5.0, 9.35, 0x8b5cf6);
+
+      zone("Раздевалка", -10.1, 4.35, 4.05, 1.75, 0xa78bfa);
+      zone("Туалет №1", -11.1, 2.45, 2.0, 1.25, 0x38bdf8);
+      zone("Туалет №2", -11.1, 1.15, 2.0, 1.25, 0x38bdf8);
+      zone("Коридор", -8.95, 1.8, 1.6, 3.9, 0x64748b);
+      zone("Кабинет логопеда", -10.1, -4.35, 4.05, 7.35, 0xf59e0b);
+
+      zone("КОРИДОР", 1.05, 2.65, 20.0, 1.1, 0x64748b);
+      zone("Кабинет №1", -5.25, 5.75, 4.9, 4.7, 0x93c5fd);
+      zone("Кабинет №2", -1.35, 5.75, 2.9, 4.7, 0x93c5fd);
+      zone("Кабинет №3", 1.55, 5.75, 2.9, 4.7, 0x93c5fd);
+      zone("Каб. юриста", 4.45, 5.75, 2.9, 4.7, 0xfacc15);
+      zone("Каб. ст. преп.", 7.25, 5.75, 2.7, 4.7, 0xf87171);
+      zone("Клад. уборки", 10.55, 3.15, 2.05, 1.55, 0x22c55e);
+
+      const h = (x1, x2, z) => wall((x1 + x2) / 2, 0, Math.abs(x2 - x1), 0.12, z);
+      const v = (x, z1, z2) => wall(x, 0, 0.12, Math.abs(z2 - z1), (z1 + z2) / 2);
+
+      // Наружные стены сложной формы.
+      h(-12.1, -8.1, 5.25);       // верх раздевалки
+      h(-7.85, 8.6, 8.1);         // верх верхнего ряда кабинетов
+      h(9.55, 11.6, 3.95);        // верх кладовки уборки
+      h(-12.1, -1.05, -8.1);      // низ, слева от входа
+      h(1.05, 12.1, -8.1);        // низ, справа от входа
+      v(-12.1, -8.1, 5.25);       // левый край
+      v(12.1, -8.1, 2.15);        // правый край нижнего блока
+      v(11.6, 2.35, 3.95);        // правый край кладовки уборки
+      v(8.6, 3.2, 8.1);           // правый край кабинета ст. препода
+      v(-7.85, 3.2, 8.1);         // левый край кабинета №1
+
+      // Верхний ряд кабинетов и двери в коридор.
+      h(-7.85, -6.35, 3.2);
+      h(-5.35, -3.05, 3.2);
+      h(-2.05, -0.35, 3.2);
+      h(0.65, 1.95, 3.2);
+      h(2.95, 4.55, 3.2);
+      h(5.55, 6.9, 3.2);
+      h(7.75, 8.6, 3.2);
+      v(-2.75, 3.2, 8.1);
+      v(0.1, 3.2, 8.1);
+      v(3.0, 3.2, 8.1);
+      v(5.9, 3.2, 8.1);
+
+      // Длинный коридор: нижняя граница с проходами в ресепшн, зону ожидания, кабинет №4 и кладовку.
+      h(-8.1, -5.6, 2.15);
+      h(-3.6, 0.35, 2.15);
+      h(1.9, 3.5, 2.15);
+      h(5.25, 7.2, 2.15);
+      h(8.6, 12.1, 2.15);
+
+      // Левый блок: раздевалка, туалеты, вертикальный коридор, логопед.
+      h(-12.1, -8.1, 3.45);       // низ раздевалки / верх туалетного блока
+      h(-12.1, -10.05, 2.05);     // раздел туалет 1 / туалет 2
+      h(-12.1, -8.1, 0.75);       // низ туалетов / верх логопеда
+      v(-10.05, 0.75, 3.45);      // стена между туалетами и малым коридором
+      v(-8.1, 0.75, 5.25);        // правый край левого блока
+      v(-8.1, -8.1, -0.6);        // правый край кабинета логопеда
+      h(-12.1, -8.1, -0.6);       // верх логопеда
+
+      // Ресепшн, зона ожидания, кабинет №4 и кладовка завхоза.
+      v(0.45, -8.1, 2.15);        // граница ресепшн / зона ожидания
+      v(1.85, -8.1, 2.15);        // граница зона ожидания / кабинет №4
+      v(7.05, -8.1, 2.15);        // граница кабинет №4 / кладовка завхоза
+    }
+
+    function zone(name, x, z, w, d, color) {
+      const mat = new THREE.MeshStandardMaterial({ color, transparent: true, opacity: 0.23, roughness: .9 });
+      const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, 0.04, d), mat);
+      mesh.position.set(x, 0.03, z);
       scene.add(mesh);
-    });
-  }
-
-  function buildProps() {
-    // стойка ресепшн
-    addBox(-6.65, 0.35, 3.6, 0.32, 0.7, 2.4, 0x7c2d12, true);
-    addBox(-6.65, 0.78, 3.6, 0.42, 0.12, 2.6, 0xfacc15, true);
-    addBox(-7.35, 0.35, 2.25, 0.9, 0.7, 0.3, 0x334155, true);
-    addTextSign('CRM', -7.35, 0.85, 2.25, 0.7);
-
-    // входной коврик
-    addBox(-3.4, 0.04, 6.2, 1.9, 0.06, 0.45, 0x22c55e, false);
-    addTextSign('ВХОД', -3.4, 0.18, 6.2, 0.9);
-
-    // кресла ожидания
-    for (let i = 0; i < 4; i++) addBox(-1.0, 0.25, -1.1 + i * 1.2, 0.45, 0.5, 0.45, 0x2563eb, true);
-
-    // классы: столы
-    [[-6.1,-6.7],[-0.8,-6.7],[3,-6.7],[3.25,1.55]].forEach(([x,z]) => {
-      for (let i = 0; i < 3; i++) addBox(x - 1.2 + i * 1.2, 0.25, z, 0.7, 0.5, 0.5, 0x92400e, true);
-    });
-
-    // туалеты
-    addBox(-14.15, 0.25, -2.85, 0.55, 0.5, 0.55, 0xf8fafc, true);
-    addBox(-14.15, 0.25, -1.35, 0.55, 0.5, 0.55, 0xf8fafc, true);
-
-    // кладовка завхоза: коробки
-    for (let i = 0; i < 8; i++) addBox(8.0 + (i % 4) * 0.7, 0.24, -1 + Math.floor(i/4) * 0.8, 0.55, 0.48, 0.55, 0xa16207, true);
-
-    // улица/перекур
-    addTextSign('перекур', -6.0, 0.2, 8.35, 0.9);
-    addBox(-6.0, 0.25, 8.35, 1.6, 0.5, 0.22, 0x475569, true);
-  }
-
-  function addBox(x, y, z, w, h, d, color, shadow) {
-    const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), material(color));
-    mesh.position.set(x, y, z);
-    mesh.castShadow = !!shadow;
-    mesh.receiveShadow = true;
-    scene.add(mesh);
-    return mesh;
-  }
-
-  function addTextSign(text, x, y, z, scale) {
-    const sp = createTextSprite(text, { fontSize: 46, bg: 'rgba(255,255,255,.86)', color: '#0f172a', padding: 14 });
-    sp.position.set(x, y, z);
-    sp.scale.set(scale, scale * 0.38, 1);
-    scene.add(sp);
-    return sp;
-  }
-
-  function buildCharacters() {
-    state.entities.nastya = createPerson('Настя', 0xec4899, places.desk.x + .7, places.desk.z - 1.0, { role: 'старший админ', emoji: '💅' });
-    state.entities.sveta = createPerson('Света', 0xfbbf24, places.senior.x, places.senior.z, { role: 'старший препод', emoji: '👑' });
-    state.entities.dasha = createPerson('Даша', 0x7c3aed, places.outside.x + 1.2, places.outside.z, { role: 'преподаватель', emoji: '🎧' });
-    state.entities.paladi = createPerson('Палади', 0xef4444, places.cab2.x, places.cab2.z, { role: 'новый препод', emoji: '!' });
-    state.entities.barsukova = createPerson('Барсукова', 0x64748b, places.cab3.x, places.cab3.z, { role: 'грустный препод', emoji: '☁' });
-    state.entities.annaLegal = createPerson('Анна юрист', 0x9333ea, places.legal.x, places.legal.z, { role: 'покупки и муж', emoji: '💼' });
-    state.entities.pasha = createPerson('Паша', 0x06b6d4, places.outside.x - 1.2, places.outside.z, { role: 'айтишник', emoji: '🖥' });
-    state.entities.zavhoz = createPerson('Завхоз', 0x78350f, places.zavhoz.x, places.zavhoz.z, { role: 'ключи где-то', emoji: '🔧' });
-    state.entities.petrovna = createPerson('Аня Петрова', 0x0f766e, places.outside.x, places.outside.z + .4, { role: 'зам директора', emoji: '📋', hidden: true });
-    state.entities.golubev = createPerson('Голубев', 0x111827, places.outside.x, places.outside.z + .4, { role: 'директор', emoji: '🚗', hidden: true });
-    state.entities.rita = createPerson('Рита Баранова', 0xfb7185, places.cab4.x, places.cab4.z + .8, { role: 'срочно в туалет', emoji: '😰', scale: .72, hidden: true });
-  }
-
-  function createPlayer() {
-    player = createPerson('Эля', 0x38bdf8, places.receptionFront.x, places.receptionFront.z + 1.0, { role: 'админ', emoji: '🏃', player: true, scale: 1.05 });
-    state.entities.elya = player;
-  }
-
-  function createPerson(name, color, x, z, opts = {}) {
-    const group = new THREE.Group();
-    group.position.set(x, 0, z);
-    group.userData = { name, speed: opts.player ? playerSpeed : 1.35, target: null, type: opts.player ? 'player' : 'npc', interactable: true, role: opts.role || '', baseX: x, baseZ: z };
-
-    const s = opts.scale || 1;
-    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.28 * s, 0.34 * s, 0.72 * s, 16), material(color));
-    body.position.y = 0.52 * s;
-    body.castShadow = true;
-    group.add(body);
-    const head = new THREE.Mesh(new THREE.SphereGeometry(0.25 * s, 16, 16), material(0xffd7bd));
-    head.position.y = 1.03 * s;
-    head.castShadow = true;
-    group.add(head);
-    const hair = new THREE.Mesh(new THREE.SphereGeometry(0.265 * s, 16, 8), material(opts.player ? 0x1e293b : 0x3f2a1d));
-    hair.position.set(0, 1.12 * s, -0.02);
-    hair.scale.set(1, .45, .85);
-    hair.castShadow = true;
-    group.add(hair);
-
-    const label = createTextSprite(name, { fontSize: 44, bg: 'rgba(15,23,42,.82)', color: '#fff', padding: 16 });
-    label.position.set(0, 1.52 * s, 0);
-    label.scale.set(Math.max(1.15, name.length * 0.12), 0.35, 1);
-    group.add(label);
-
-    const icon = createTextSprite('!', { fontSize: 68, bg: 'rgba(239,68,68,.9)', color: '#fff', padding: 12 });
-    icon.position.set(0.45 * s, 1.75 * s, 0);
-    icon.scale.set(0.42, 0.42, 1);
-    icon.visible = false;
-    group.add(icon);
-    group.userData.icon = icon;
-
-    if (opts.emoji) {
-      const emo = createTextSprite(opts.emoji, { fontSize: 70, bg: 'rgba(255,255,255,0)', color: '#fff', padding: 4 });
-      emo.position.set(0, 1.0 * s, .28 * s);
-      emo.scale.set(0.42 * s, 0.42 * s, 1);
-      group.add(emo);
+      const sign = makeBillboardText(name, color);
+      sign.position.set(x, 0.08, z - d / 2 + 0.35);
+      scene.add(sign);
     }
 
-    if (opts.hidden) group.visible = false;
-    scene.add(group);
-    return group;
-  }
-
-  function createTextSprite(text, opts = {}) {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    const fontSize = opts.fontSize || 48;
-    const padding = opts.padding || 16;
-    ctx.font = `900 ${fontSize}px Arial, sans-serif`;
-    const metrics = ctx.measureText(text);
-    canvas.width = Math.ceil(metrics.width + padding * 2);
-    canvas.height = Math.ceil(fontSize + padding * 2);
-    ctx.font = `900 ${fontSize}px Arial, sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    roundRect(ctx, 0, 0, canvas.width, canvas.height, Math.min(22, canvas.height / 2), opts.bg || 'rgba(255,255,255,.8)');
-    ctx.fillStyle = opts.color || '#111827';
-    ctx.fillText(text, canvas.width / 2, canvas.height / 2 + 2);
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.minFilter = THREE.LinearFilter;
-    const mat = new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false, depthWrite: false });
-    const sp = new THREE.Sprite(mat);
-    sp.renderOrder = 20;
-    return sp;
-  }
-
-  function roundRect(ctx, x, y, w, h, r, fill) {
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.arcTo(x + w, y, x + w, y + h, r);
-    ctx.arcTo(x + w, y + h, x, y + h, r);
-    ctx.arcTo(x, y + h, x, y, r);
-    ctx.arcTo(x, y, x + w, y, r);
-    ctx.closePath();
-    ctx.fillStyle = fill;
-    ctx.fill();
-  }
-
-  function resetGame() {
-    Object.keys(stats).forEach(k => stats[k] = typeof stats[k] === 'number' ? 0 : stats[k]);
-    Object.assign(stats, { nerves: 100, reputation: 100, chaos: 0, records: 0, payments: 0, lost: 0, suspicion: 0, cover: 100, conflictsSolved: 0, pashaFixed: 0, zavhozOk: 0 });
-    state.gameSeconds = 0;
-    state.dayMinutes = 9 * 60;
-    state.smoking = false;
-    state.smokingUntil = 0;
-    state.petrovnaPresent = false;
-    state.legalInToilet = false;
-    state.events = [];
-    state.clients.forEach(c => scene.remove(c.group));
-    state.clients = [];
-    lastEventAt = 0;
-    lastClientAt = 0;
-    spawnCounter = 0;
-    ended = false;
-    paused = false;
-    hideAllEventIcons();
-    repositionCoreNPCs();
-    log('Смена началась. Эля на ресепшне. Клиенты скоро придут.');
-    updateHud();
-  }
-
-  function repositionCoreNPCs() {
-    setEntityPosition(player, places.receptionFront.x, places.receptionFront.z + 1.0);
-    setEntityPosition(state.entities.nastya, places.desk.x + .7, places.desk.z - 1.0); state.entities.nastya.visible = true;
-    setEntityPosition(state.entities.sveta, places.senior.x, places.senior.z); state.entities.sveta.visible = true;
-    setEntityPosition(state.entities.dasha, places.outside.x + 1.2, places.outside.z); state.entities.dasha.visible = true; setTarget(state.entities.dasha, places.cab1.x, places.cab1.z);
-    setEntityPosition(state.entities.paladi, places.cab2.x, places.cab2.z); state.entities.paladi.visible = true;
-    setEntityPosition(state.entities.barsukova, places.cab3.x, places.cab3.z); state.entities.barsukova.visible = true;
-    setEntityPosition(state.entities.annaLegal, places.legal.x, places.legal.z); state.entities.annaLegal.visible = true;
-    setEntityPosition(state.entities.pasha, places.outside.x - 1.2, places.outside.z); state.entities.pasha.visible = true; setTarget(state.entities.pasha, places.tech.x, places.tech.z);
-    setEntityPosition(state.entities.zavhoz, places.zavhoz.x, places.zavhoz.z); state.entities.zavhoz.visible = true;
-    state.entities.golubev.visible = false;
-    state.entities.petrovna.visible = false;
-    state.entities.rita.visible = false;
-  }
-
-  function setEntityPosition(entity, x, z) {
-    entity.position.x = x;
-    entity.position.z = z;
-    entity.userData.target = null;
-  }
-
-  function setTarget(entity, x, z) {
-    entity.userData.target = { x, z };
-  }
-
-  function hideAllEventIcons() {
-    Object.values(state.entities).forEach(e => { if (e.userData.icon) e.userData.icon.visible = false; });
-  }
-
-  function startGame() {
-    if (!window.THREE) return;
-    if (!renderer) initThree();
-    resetGame();
-    startScreen.classList.remove('active');
-    endScreen.classList.remove('active');
-    hud.style.display = 'grid';
-    gameStarted = true;
-    clock.start();
-    animate();
-  }
-
-  function animate() {
-    if (!gameStarted) return;
-    requestAnimationFrame(animate);
-    const dt = Math.min(clock.getDelta(), 0.033);
-    if (!paused && !ended && !interactionLock) update(dt);
-    render();
-  }
-
-  function update(dt) {
-    state.gameSeconds += dt;
-    state.dayMinutes = 9 * 60 + Math.floor(state.gameSeconds * (11 * 60 / 420));
-
-    updatePlayer(dt);
-    updateEntities(dt);
-    updateCamera(dt);
-    updateSchedule(dt);
-    updateClients(dt);
-    updateEvents(dt);
-    updateNearestHint();
-    updateHud();
-    checkEndConditions();
-  }
-
-  function updatePlayer(dt) {
-    let x = 0, z = 0;
-    if (keys.has('KeyW') || keys.has('ArrowUp')) z -= 1;
-    if (keys.has('KeyS') || keys.has('ArrowDown')) z += 1;
-    if (keys.has('KeyA') || keys.has('ArrowLeft')) x -= 1;
-    if (keys.has('KeyD') || keys.has('ArrowRight')) x += 1;
-    if (Math.abs(joystick.dx) > .04 || Math.abs(joystick.dy) > .04) { x += joystick.dx; z += joystick.dy; }
-    const len = Math.hypot(x, z);
-    if (len > 0) {
-      x /= len; z /= len;
-      const sprint = keys.has('Space') ? 1.45 : 1;
-      player.position.x += x * playerSpeed * sprint * dt;
-      player.position.z += z * playerSpeed * sprint * dt;
-      player.rotation.y = Math.atan2(x, z);
+    function wall(x, y, w, d, z) {
+      const mat = new THREE.MeshStandardMaterial({ color: 0x4b5563, roughness: .8 });
+      const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, 1.1, d), mat);
+      mesh.position.set(x, 0.52, z);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      scene.add(mesh);
     }
-    player.position.x = clamp(player.position.x, -15.6, 15.2);
-    player.position.z = clamp(player.position.z, -8.6, 9.2);
-  }
 
-  function updateEntities(dt) {
-    Object.values(state.entities).forEach(entity => {
-      if (!entity.visible || entity === player) return;
-      const t = entity.userData.target;
-      if (!t) return;
-      const dx = t.x - entity.position.x;
-      const dz = t.z - entity.position.z;
-      const dist = Math.hypot(dx, dz);
-      if (dist < 0.06) { entity.userData.target = null; return; }
-      const step = Math.min(dist, (entity.userData.speed || 1.25) * dt);
-      entity.position.x += dx / dist * step;
-      entity.position.z += dz / dist * step;
-      entity.rotation.y = Math.atan2(dx, dz);
-    });
-  }
+    function addFurniture() {
+      // Ресепшн: вертикальная стойка ближе к левой части, как на схеме.
+      desk(-5.9, -5.15, .8, 2.8, 0x795548);
+      desk(-4.65, -6.8, 2.0, .8, 0x6d4c41);
 
-  function updateCamera(dt) {
-    const targetX = player.position.x * 0.35;
-    const targetZ = player.position.z * 0.35;
-    camera.position.x += (targetX - camera.position.x) * Math.min(1, dt * 2.3);
-    camera.position.z += (14 + targetZ - camera.position.z) * Math.min(1, dt * 2.3);
-    camera.lookAt(player.position.x * 0.35, 0, player.position.z * 0.35);
-  }
+      // Зона ожидания.
+      for (let i = 0; i < 5; i++) chair(.85, -6.2 + i * 1.1, 0x2563eb);
+      for (let i = 0; i < 4; i++) chair(1.45, -5.65 + i * 1.1, 0x2563eb);
 
-  function updateSchedule(dt) {
-    if (state.gameSeconds - lastClientAt > 13 + Math.random() * 8 && state.clients.length < 3) spawnClient();
-    if (state.gameSeconds - lastEventAt > 12 + Math.random() * 6) spawnOfficeEvent();
-    if (state.smoking && state.gameSeconds > state.smokingUntil) endSmoking();
-  }
+      // Учебные кабинеты сверху.
+      desk(-5.25, 6.4, 2.0, .8, 0x374151);
+      desk(-1.35, 6.4, 1.6, .75, 0x374151);
+      desk(1.55, 6.4, 1.6, .75, 0x374151);
+      desk(4.45, 6.4, 1.6, .75, 0x6d4c41);
+      desk(7.25, 6.4, 1.6, .75, 0x6d4c41);
+      for (let i = 0; i < 4; i++) chair(-6.2 + i * .65, 5.25, 0x475569);
+      for (let i = 0; i < 3; i++) chair(-2.05 + i * .6, 5.25, 0x475569);
+      for (let i = 0; i < 3; i++) chair(.85 + i * .6, 5.25, 0x475569);
 
-  function spawnClient() {
-    lastClientAt = state.gameSeconds;
-    spawnCounter++;
-    const requests = [
-      { name: 'мама гения', desc: 'Ему 6 лет, но он очень развитый. Хотим сразу к старшим.', age: 6, level: 'starter', time: 'вечер', mood: 'demanding' },
-      { name: 'родитель “просто спросить”', desc: 'Мы просто спросить. А пробное бесплатно? А потом ещё подумаем.', age: 8, level: 'beginner', time: 'вечер', mood: 'slow' },
-      { name: 'папа ОГЭ', desc: 'Нам ОГЭ через месяц. Надо быстро и чтобы результат.', age: 15, level: 'exam', time: 'вечер', mood: 'urgent' },
-      { name: 'бабушка', desc: 'Нам к самому доброму преподавателю, ребёнок нежный.', age: 7, level: 'beginner', time: 'вечер', mood: 'soft' },
-      { name: 'мама после другой школы', desc: 'Мы уже ходили везде, нам всё не понравилось. Убедите меня.', age: 10, level: 'elementary', time: 'день', mood: 'conflict' },
-      { name: 'клиент “дорого”', desc: 'А почему так дорого? Скидка будет?', age: 9, level: 'beginner', time: 'вечер', mood: 'discount' },
-      { name: 'мама логопеда', desc: 'Нам английский бы, но сначала надо с произношением разобраться.', age: 6, level: 'special', time: 'день', mood: 'special' }
-    ];
-    const req = requests[Math.floor(Math.random() * requests.length)];
-    const group = createPerson('Клиент', 0x22c55e, places.entrance.x + (Math.random()-.5), places.entrance.z + .8, { role: req.name, emoji: '👤', scale: .88 });
-    group.userData.kind = 'client';
-    group.userData.request = req;
-    group.userData.patience = req.mood === 'slow' ? 50 : 40;
-    group.userData.queueX = places.receptionFront.x + (state.clients.length * .6);
-    group.userData.queueZ = places.receptionFront.z - state.clients.length * .25;
-    setTarget(group, group.userData.queueX, group.userData.queueZ);
-    state.clients.push({ group, request: req, patience: group.userData.patience, served: false });
-    log(`Новый клиент: ${req.name}. ${req.desc}`);
-  }
+      // Кабинет №4 и логопед.
+      desk(4.65, -2.7, 2.2, .8, 0x374151);
+      for (let i = 0; i < 5; i++) chair(3.4 + i * .6, -4.1, 0x475569);
+      desk(-10.1, -4.4, 1.9, .8, 0x4c1d95);
+      chair(-10.8, -5.35, 0x475569);
+      chair(-9.35, -5.35, 0x475569);
 
-  function updateClients(dt) {
-    for (let i = state.clients.length - 1; i >= 0; i--) {
-      const c = state.clients[i];
-      if (c.served) continue;
-      const g = c.group;
-      const atDesk = distance(g.position, { x: g.userData.queueX, z: g.userData.queueZ }) < .2;
-      if (atDesk) c.patience -= dt;
-      if (c.patience <= 0) {
-        stats.lost += 1;
-        applyStats({ reputation: -8, nerves: -6, chaos: 5 });
-        log(`Клиент ушёл: ${c.request.name}. Эля не успела обработать заявку.`);
-        scene.remove(g);
-        state.clients.splice(i, 1);
+      // Кладовки и завхозный хаос.
+      propBox(8.3, -6.8, 0x9ca3af);
+      propBox(9.2, -6.1, 0xf97316);
+      propBox(10.2, -5.45, 0x22c55e);
+      propBox(11.0, -6.9, 0x94a3b8);
+      propBox(10.55, 3.2, 0x22c55e);
+      propBox(11.2, 3.45, 0x9ca3af);
+    }
+
+    function desk(x, z, w, d, color) {
+      const mat = new THREE.MeshStandardMaterial({ color, roughness: .72 });
+      const top = new THREE.Mesh(new THREE.BoxGeometry(w, .18, d), mat);
+      top.position.set(x, .55, z);
+      top.castShadow = true;
+      top.receiveShadow = true;
+      scene.add(top);
+      const legGeo = new THREE.BoxGeometry(.12, .55, .12);
+      for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+        const leg = new THREE.Mesh(legGeo, mat);
+        leg.position.set(x + sx * (w / 2 - .15), .25, z + sz * (d / 2 - .15));
+        leg.castShadow = true;
+        scene.add(leg);
       }
     }
-  }
 
-  function spawnOfficeEvent() {
-    lastEventAt = state.gameSeconds;
-    const pool = [eventJuristTalk, eventDashaComplains, eventRitaToilet, eventPashaDistracted, eventZavhozProblem, eventPaladiRude, eventBarsukovaSad, eventGolubevArrival, eventPetrovnaArrival, eventSmokingBreak];
-    const fn = pool[Math.floor(Math.random() * pool.length)];
-    fn();
-  }
+    function chair(x, z, color) {
+      const mat = new THREE.MeshStandardMaterial({ color, roughness: .8 });
+      const seat = new THREE.Mesh(new THREE.BoxGeometry(.42, .15, .42), mat);
+      seat.position.set(x, .33, z);
+      seat.castShadow = true;
+      scene.add(seat);
+      const back = new THREE.Mesh(new THREE.BoxGeometry(.42, .55, .12), mat);
+      back.position.set(x, .62, z + .25);
+      back.castShadow = true;
+      scene.add(back);
+    }
 
-  function registerEvent(data) {
-    const id = 'ev' + Date.now() + Math.random().toString(16).slice(2);
-    data.id = id;
-    data.expiresAt = state.gameSeconds + (data.duration || 28);
-    state.events.push(data);
-    if (data.entity?.userData?.icon) data.entity.userData.icon.visible = true;
-    log(data.log || data.title);
-  }
+    function propBox(x, z, color) {
+      const mesh = new THREE.Mesh(new THREE.BoxGeometry(.7, .55, .7), new THREE.MeshStandardMaterial({ color, roughness: .78 }));
+      mesh.position.set(x, .28, z);
+      mesh.castShadow = true;
+      scene.add(mesh);
+    }
 
-  function updateEvents(dt) {
-    for (let i = state.events.length - 1; i >= 0; i--) {
-      const ev = state.events[i];
-      if (state.gameSeconds > ev.expiresAt) {
-        if (ev.onExpire) ev.onExpire();
-        else applyStats({ chaos: 5, nerves: -3 });
-        if (ev.entity?.userData?.icon) ev.entity.userData.icon.visible = false;
-        state.events.splice(i, 1);
+    function createPerson(name, bodyColor, accentColor, scale = 1) {
+      const group = new THREE.Group();
+      const bodyMat = new THREE.MeshStandardMaterial({ color: bodyColor, roughness: .68 });
+      const headMat = new THREE.MeshStandardMaterial({ color: 0xffd6ba, roughness: .72 });
+      const accentMat = new THREE.MeshStandardMaterial({ color: accentColor, roughness: .72 });
+
+      const body = new THREE.Mesh(new THREE.CapsuleGeometry(.32 * scale, .55 * scale, 4, 10), bodyMat);
+      body.position.y = .64 * scale;
+      body.castShadow = true;
+      group.add(body);
+
+      const head = new THREE.Mesh(new THREE.SphereGeometry(.28 * scale, 18, 14), headMat);
+      head.position.y = 1.28 * scale;
+      head.castShadow = true;
+      group.add(head);
+
+      const hair = new THREE.Mesh(new THREE.SphereGeometry(.295 * scale, 18, 10, 0, Math.PI * 2, 0, Math.PI / 2.1), new THREE.MeshStandardMaterial({ color: 0x3b2418, roughness: .8 }));
+      hair.position.y = 1.37 * scale;
+      hair.rotation.x = Math.PI;
+      group.add(hair);
+
+      const badge = new THREE.Mesh(new THREE.BoxGeometry(.42 * scale, .08 * scale, .06 * scale), accentMat);
+      badge.position.set(0, .88 * scale, .31 * scale);
+      group.add(badge);
+
+      group.userData.name = name;
+      group.userData.baseY = 0;
+      return group;
+    }
+
+    function createClientMesh() {
+      const group = createPerson("Клиент", colors.client, 0xffffff, .95);
+      const bag = new THREE.Mesh(new THREE.BoxGeometry(.18, .28, .2), new THREE.MeshStandardMaterial({ color: 0x8b4513, roughness: .8 }));
+      bag.position.set(.38, .62, .02);
+      bag.castShadow = true;
+      group.add(bag);
+      return group;
+    }
+
+    function createNpc(name, color, x, z, role) {
+      const mesh = createPerson(name, color, 0xffffff, .98);
+      mesh.position.set(x, 0, z);
+      mesh.userData.kind = "npc";
+      mesh.userData.name = name;
+      mesh.userData.role = role;
+      mesh.userData.problem = null;
+      mesh.userData.problemTimer = 0;
+      mesh.userData.home = new THREE.Vector3(x, 0, z);
+      scene.add(mesh);
+      makeLabel(mesh, name, "npc");
+      state.npcs.push(mesh);
+      return mesh;
+    }
+
+    function makeBillboardText(text, color) {
+      const canvas = document.createElement("canvas");
+      canvas.width = 512;
+      canvas.height = 128;
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0,0,512,128);
+      ctx.fillStyle = "rgba(0,0,0,.45)";
+      roundRect(ctx, 16, 28, 480, 72, 24);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(255,255,255,.22)";
+      ctx.lineWidth = 3;
+      ctx.stroke();
+      ctx.fillStyle = "#fff";
+      ctx.font = "800 38px Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(text, 256, 64);
+      const tex = new THREE.CanvasTexture(canvas);
+      const mat = new THREE.SpriteMaterial({ map: tex, transparent: true });
+      const sprite = new THREE.Sprite(mat);
+      sprite.scale.set(2.8, .7, 1);
+      return sprite;
+    }
+
+    function roundRect(ctx, x, y, w, h, r) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + w, y + h, x, y + h, r);
+      ctx.arcTo(x, y + h, x, y, r);
+      ctx.arcTo(x, y, x + w, y, r);
+      ctx.closePath();
+    }
+
+    function makeLabel(object, text, type) {
+      const el = document.createElement("div");
+      el.className = `label ${type || ""}`;
+      el.textContent = text;
+      document.body.appendChild(el);
+      const item = { object, el, base: text, type };
+      state.labels.push(item);
+      object.userData.label = item;
+      return item;
+    }
+
+    function fillSchedule() {
+      scheduleBody.innerHTML = groups.map(g => `<tr><td>${g.title}</td><td>${g.time}</td><td>${g.teacher}</td></tr>`).join("");
+    }
+
+    function bindEvents() {
+      startBtn.addEventListener("click", startGame);
+      restartBtn.addEventListener("click", () => window.location.reload());
+      actionBtn.addEventListener("click", interact);
+      tabletBtn.addEventListener("click", toggleTablet);
+      closeTabletBtn.addEventListener("click", toggleTablet);
+      modalClose.addEventListener("click", closeModal);
+
+      window.addEventListener("keydown", (event) => {
+        const code = event.code;
+        if (["KeyW", "KeyA", "KeyS", "KeyD", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space", "Tab"].includes(code)) event.preventDefault();
+        if (!state.running) return;
+        if (code === "KeyE") interact();
+        if (code === "Tab") toggleTablet();
+        state.keys.add(code);
+      });
+      window.addEventListener("keyup", (event) => state.keys.delete(event.code));
+
+      joystick.addEventListener("pointerdown", onJoyStart);
+      window.addEventListener("pointermove", onJoyMove);
+      window.addEventListener("pointerup", onJoyEnd);
+      window.addEventListener("pointercancel", onJoyEnd);
+
+      window.addEventListener("resize", () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.7));
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    }
+
+    function startGame() {
+      state.running = true;
+      state.elapsed = 0;
+      state.spawnTimer = 2;
+      state.problemTimer = 8;
+      startScreen.classList.remove("active");
+      hud.style.display = "grid";
+      mission.style.display = "block";
+      joystick.style.display = "block";
+      actionStack.style.display = "grid";
+      showToast("Смена началась. Эля вышла на ресепшен.");
+      triggerProblem("Барсукова");
+      updateHud();
+    }
+
+    function animate(timestamp) {
+      requestAnimationFrame(animate);
+      const dt = Math.min(0.05, (timestamp - state.lastTime) / 1000 || 0);
+      state.lastTime = timestamp;
+
+      if (state.running && !state.modalOpen) update(dt);
+      updateCamera(dt);
+      renderer.render(scene, camera);
+      updateLabels();
+    }
+
+    function update(dt) {
+      state.elapsed += dt;
+      movePlayer(dt);
+      updateClients(dt);
+      updateProblems(dt);
+      updateNearest();
+      maybeMovePasha(dt);
+
+      state.spawnTimer -= dt;
+      if (state.spawnTimer <= 0) {
+        spawnClient();
+        state.spawnTimer = Math.max(8, 18 - state.elapsed / 25 + Math.random() * 6);
+      }
+
+      state.problemTimer -= dt;
+      if (state.problemTimer <= 0) {
+        triggerRandomProblem();
+        state.problemTimer = Math.max(10, 23 - state.elapsed / 30 + Math.random() * 10);
+      }
+
+      if (state.elapsed >= GAME_DURATION) endGame("time");
+      if (state.stats.nerves <= 0) endGame("nerves");
+      if (state.stats.rep <= 0) endGame("rep");
+      if (state.stats.chaos >= 100) endGame("chaos");
+      if (state.stats.lost > 3) endGame("lost");
+
+      updateHud();
+    }
+
+    function movePlayer(dt) {
+      let x = state.joy.x;
+      let z = state.joy.y;
+      if (state.keys.has("KeyA") || state.keys.has("ArrowLeft")) x -= 1;
+      if (state.keys.has("KeyD") || state.keys.has("ArrowRight")) x += 1;
+      if (state.keys.has("KeyW") || state.keys.has("ArrowUp")) z -= 1;
+      if (state.keys.has("KeyS") || state.keys.has("ArrowDown")) z += 1;
+      const length = Math.hypot(x, z);
+      if (length > 0.05) {
+        x /= Math.max(1, length);
+        z /= Math.max(1, length);
+        const boost = state.keys.has("Space") ? 1.35 : 1;
+        const speed = 5.2 * boost;
+        player.position.x = clamp(player.position.x + x * speed * dt, -MAP_LIMIT_X + .7, MAP_LIMIT_X - .7);
+        player.position.z = clamp(player.position.z + z * speed * dt, -MAP_LIMIT_Z + .7, MAP_LIMIT_Z - .7);
+        player.rotation.y = Math.atan2(x, z);
       }
     }
-  }
 
-  function eventSmokingBreak() {
-    if (state.smoking) return eventDashaComplains();
-    state.smoking = true;
-    state.smokingUntil = state.gameSeconds + 34;
-    setTarget(state.entities.nastya, places.smoke.x, places.smoke.z);
-    setTarget(state.entities.sveta, places.smoke.x + .9, places.smoke.z);
-    registerEvent({
-      title: 'Настя и Света ушли курить',
-      text: 'Ресепшн остался на Эле. Если приедет Петрова или Голубев, придётся прикрывать.',
-      entity: state.entities.nastya,
-      duration: 34,
-      log: 'Настя и Света ушли на перекур. Эля теперь одна на ресепшне.',
-      choices: [
-        { text: 'Принять судьбу и держать ресепшн', fn: () => applyStats({ nerves: -2, cover: 3 }) },
-        { text: 'Позвать их обратно', fn: () => { endSmoking(); applyStats({ nerves: -1, chaos: -2 }); log('Эля вернула Настю и Свету с перекура. Ненадолго.'); } }
-      ],
-      onExpire: () => { endSmoking(); applyStats({ nerves: -2 }); }
-    });
-  }
-
-  function endSmoking() {
-    state.smoking = false;
-    setTarget(state.entities.nastya, places.desk.x + .7, places.desk.z - 1.0);
-    setTarget(state.entities.sveta, places.senior.x, places.senior.z);
-    log('Настя и Света вернулись с перекура, как будто ничего не было.');
-  }
-
-  function eventJuristTalk() {
-    const anna = state.entities.annaLegal;
-    anna.visible = true;
-    setTarget(anna, places.desk.x + .3, places.desk.z + .4);
-    registerEvent({
-      title: 'Юристка мешает на ресепшне',
-      text: 'Анна подошла к ресепшну и начала рассказывать про новую покупку и мужа. Клиенты ждут.',
-      entity: anna,
-      duration: 30,
-      log: 'Анна-юристка вышла из кабинета и зависла на ресепшне с рассказами.',
-      choices: [
-        { text: '«Анна, договор очень срочно, Голубев ждёт»', fn: () => { setTarget(anna, places.legal.x, places.legal.z); applyStats({ chaos: -3, nerves: -1 }); stats.conflictsSolved++; log('Анна вспомнила про договор и вернулась в кабинет.'); } },
-        { text: 'Послушать про покупку', fn: () => { applyStats({ nerves: -7, chaos: 6 }); log('Эля потеряла время. Юристка довольна, клиенты нет.'); } },
-        { text: 'Сказать: «Мне сейчас некогда»', fn: () => { applyStats({ nerves: -2, reputation: -2, chaos: 4 }); log('Анна обиделась и ушла с видом человека, который всё запомнил.'); } }
-      ]
-    });
-  }
-
-  function eventDashaComplains() {
-    const dasha = state.entities.dasha;
-    dasha.visible = true;
-    setTarget(dasha, places.receptionFront.x + 1.2, places.receptionFront.z);
-    registerEvent({
-      title: 'Даша недовольна детьми',
-      text: 'Даша пришла на ресепшн: «Они вообще ничего не понимают. Я им объяснила три раза. Они глупые, я не могу».',
-      entity: dasha,
-      duration: 30,
-      log: 'Даша жалуется, что дети в группе слишком глупые для неё.',
-      choices: [
-        { text: '«Даша, ты справишься, они просто дети»', fn: () => { setTarget(dasha, places.cab1.x, places.cab1.z); applyStats({ chaos: -4, reputation: 2, nerves: -1 }); stats.conflictsSolved++; } },
-        { text: '«Да, они реально странные»', fn: () => { applyStats({ reputation: -4, chaos: 3 }); log('Даше легче, школе хуже.'); } },
-        { text: 'Позвать Свету, если она не курит', fn: () => { if (state.smoking) { applyStats({ chaos: 8, nerves: -5 }); log('Света на перекуре. Эля осталась с Дашей и проблемой.'); } else { setTarget(state.entities.sveta, places.receptionFront.x, places.receptionFront.z); applyStats({ chaos: -6, reputation: 3 }); log('Света разобралась с Дашей и группой.'); } } }
-      ]
-    });
-  }
-
-  function eventRitaToilet() {
-    const rita = state.entities.rita;
-    rita.visible = true;
-    setEntityPosition(rita, places.cab4.x - .7, places.cab4.z + .7);
-    setTarget(rita, places.toilet1.x, places.toilet1.z);
-    const occupied = Math.random() < 0.45 || state.legalInToilet;
-    if (occupied) {
-      state.legalInToilet = true;
-      setTarget(state.entities.annaLegal, places.toilet1.x + .35, places.toilet1.z);
+    function updateCamera(dt) {
+      const target = player ? player.position : new THREE.Vector3(0,0,0);
+      const mobile = window.innerWidth < 640;
+      const offset = mobile ? new THREE.Vector3(0, 9.8, 9.6) : new THREE.Vector3(0, 10.5, 10.8);
+      const desired = target.clone().add(offset);
+      camera.position.lerp(desired, Math.min(1, dt * 5));
+      const look = target.clone().add(new THREE.Vector3(0, .7, -.8));
+      camera.lookAt(look);
     }
-    registerEvent({
-      title: 'Рита Баранова срочно в туалет',
-      text: occupied ? 'Рита Баранова опять просится в туалет, но там уже зависла юристка.' : 'Рита Баранова опять просится в туалет. Нужно быстро решить, иначе будет хаос.',
-      entity: rita,
-      duration: 24,
-      log: 'Рита Баранова срочно просится в туалет.',
-      choices: [
-        { text: occupied ? 'Попросить юристку выйти немедленно' : 'Отвести Риту в туалет №1', fn: () => { state.legalInToilet = false; setTarget(rita, places.cab4.x, places.cab4.z); setTarget(state.entities.annaLegal, places.legal.x, places.legal.z); applyStats({ reputation: 2, chaos: -4, nerves: -1 }); stats.conflictsSolved++; log('Рита спасена, туалетная катастрофа отменена.'); } },
-        { text: 'Сказать: «Потерпи до конца занятия»', fn: () => { applyStats({ reputation: -10, chaos: 12, nerves: -6 }); log('Плохое решение. Рита не тот человек, которому можно говорить «потерпи».'); } },
-        { text: 'Отправить Риту в туалет №2', fn: () => { applyStats({ chaos: -2, reputation: 1 }); setTarget(rita, places.toilet2.x, places.toilet2.z); log('Рита ушла в туалет №2. Офис выдохнул.'); } }
-      ],
-      onExpire: () => { applyStats({ chaos: 12, reputation: -8, nerves: -5 }); rita.visible = false; log('Риту не успели провести. Кабинет №4 теперь в панике.'); }
-    });
-  }
 
-  function eventPashaDistracted() {
-    const pasha = state.entities.pasha;
-    pasha.visible = true;
-    const target = Math.random() < .5 ? state.entities.nastya.position : state.entities.dasha.position;
-    setTarget(pasha, target.x + .6, target.z + .3);
-    registerEvent({
-      title: 'Паша отвлёкся',
-      text: 'CRM зависла, но Паша опять трётся рядом с Настей или Дашей. Нужно вернуть его к технике.',
-      entity: pasha,
-      duration: 28,
-      log: 'Паша пришёл чинить CRM, но свернул не туда.',
-      choices: [
-        { text: '«Паша, CRM умерла, иди чинить»', fn: () => { setTarget(pasha, places.tech.x, places.tech.z); stats.pashaFixed++; applyStats({ chaos: -7, reputation: 2 }); log('Паша вспомнил, что он айтишник. CRM получила шанс.'); } },
-        { text: 'Сделать вид, что он сам поймёт', fn: () => { applyStats({ chaos: 9, nerves: -5 }); log('Паша не понял. Стоит дальше.'); } },
-        { text: 'Попросить Настю его направить', fn: () => { if (state.smoking) { applyStats({ chaos: 7, suspicion: 4 }); log('Настя на перекуре. Паша всё ещё свободен и опасен.'); } else { setTarget(pasha, places.tech.x, places.tech.z); applyStats({ chaos: -5 }); log('Настя одним взглядом вернула Пашу к компьютеру.'); } } }
-      ]
-    });
-  }
-
-  function eventZavhozProblem() {
-    const zavhoz = state.entities.zavhoz;
-    zavhoz.visible = true;
-    setTarget(zavhoz, places.entrance.x + .9, places.entrance.z - .4);
-    registerEvent({
-      title: 'Завхоз опять сделал странное',
-      text: 'Завхоз должен был принести стулья, но принёс одну коробку и поставил её у входа.',
-      entity: zavhoz,
-      duration: 30,
-      log: 'Завхоз создал препятствие у входа. Потому что мог.',
-      choices: [
-        { text: 'Попросить убрать коробку и показать пальцем куда', fn: () => { setTarget(zavhoz, places.zavhoz.x, places.zavhoz.z); stats.zavhozOk++; applyStats({ chaos: -6, nerves: -1 }); log('Завхоз убрал коробку. Почти подвиг.'); } },
-        { text: 'Сказать «сам разберётся»', fn: () => { applyStats({ chaos: 8, reputation: -3 }); log('Он не разобрался. Коробка стала частью интерьера.'); } },
-        { text: 'Попросить ключ от кабинета', fn: () => { applyStats({ chaos: 5, nerves: -4 }); log('Ключи где-то были. Завхоз ушёл искать смысл жизни и ключи.'); } }
-      ]
-    });
-  }
-
-  function eventPaladiRude() {
-    const paladi = state.entities.paladi;
-    setTarget(paladi, places.corridor.x + 2, places.corridor.z);
-    registerEvent({
-      title: 'Палади нахамила клиенту',
-      text: 'Палади резко ответила родителю в коридоре. Клиент уже смотрит на дверь.',
-      entity: paladi,
-      duration: 24,
-      log: 'Палади сказала клиенту что-то слишком честное.',
-      choices: [
-        { text: '«Давайте я спокойно всё объясню»', fn: () => { applyStats({ reputation: 4, chaos: -6, nerves: -2 }); stats.conflictsSolved++; log('Эля сгладила конфликт. Клиент пока остаётся.'); } },
-        { text: '«Ну она просто такая»', fn: () => { applyStats({ reputation: -12, chaos: 8 }); log('Клиент не оценил честность.'); } },
-        { text: '«Палади, выйдите на минутку»', fn: () => { applyStats({ reputation: 1, chaos: -3, nerves: -3 }); setTarget(paladi, places.cab2.x, places.cab2.z); log('Палади ушла в кабинет с лицом будущего конфликта.'); } }
-      ]
-    });
-  }
-
-  function eventBarsukovaSad() {
-    const b = state.entities.barsukova;
-    registerEvent({
-      title: 'Барсукова грустит',
-      text: 'Барсукова сидит и говорит, что день тяжёлый, группа новая, а сил уже нет.',
-      entity: b,
-      duration: 28,
-      log: 'Барсукова снова выглядит так, будто офисный воздух забрал надежду.',
-      choices: [
-        { text: 'Поддержать: «Вы справитесь, группа нормальная»', fn: () => { applyStats({ chaos: -4, reputation: 2, nerves: -1 }); stats.conflictsSolved++; log('Барсукова немного ожила. Чуть-чуть.'); } },
-        { text: 'Перенести ей группу попроще', fn: () => { applyStats({ reputation: 1, chaos: -2 }); log('Группа переставлена. Расписание чуть хрустнуло, но живо.'); } },
-        { text: 'Не трогать, пусть грустит', fn: () => { applyStats({ chaos: 5, reputation: -2 }); log('Грусть Барсуковой стала частью атмосферы.'); } }
-      ]
-    });
-  }
-
-  function eventGolubevArrival() {
-    const g = state.entities.golubev;
-    g.visible = true;
-    setEntityPosition(g, places.outside.x, places.outside.z + .8);
-    setTarget(g, places.legal.x, places.legal.z);
-    registerEvent({
-      title: 'Голубев приехал',
-      text: state.smoking ? 'Голубев зашёл с улицы: «Настеныш, что у нас по оплатам?» Насти на ресепе нет.' : 'Голубев зашёл с улицы и идёт к юристу. По дороге смотрит на ресепшн.',
-      entity: g,
-      duration: 34,
-      log: 'Голубев приехал и направился к юристу. Опасность проверки.',
-      choices: [
-        { text: state.smoking ? '«Настя уточняет расписание, я всё держу»' : 'Показать записи и оплаты', fn: () => { const ok = stats.records >= 3 || state.dayMinutes < 13*60; applyStats(ok ? { reputation: 4, nerves: -1, chaos: -2 } : { reputation: -5, nerves: -5, chaos: 3 }); log(ok ? 'Голубев принял ответ. Настеныш временно спасена.' : 'Голубев недоволен цифрами.'); } },
-        { text: 'Сказать правду: «Настя курит со Светой»', fn: () => { applyStats({ reputation: -10, nerves: -10, suspicion: 10, chaos: 8 }); log('Правда прозвучала плохо. Очень плохо.'); } },
-        { text: 'Отвлечь Голубева договором у юристки', fn: () => { setTarget(g, places.legal.x, places.legal.z); applyStats({ chaos: -2, nerves: -2 }); log('Голубев ушёл к юристке. Ресепшн получил передышку.'); } }
-      ],
-      onExpire: () => { setTarget(g, places.outside.x, places.outside.z + .8); setTimeout(() => { g.visible = false; }, 2600); }
-    });
-  }
-
-  function eventPetrovnaArrival() {
-    const p = state.entities.petrovna;
-    p.visible = true;
-    state.petrovnaPresent = true;
-    setEntityPosition(p, places.outside.x - .5, places.outside.z + .8);
-    setTarget(p, places.receptionFront.x + .6, places.receptionFront.z);
-    const smoking = state.smoking;
-    registerEvent({
-      title: 'Приехала Аня Петрова',
-      text: smoking ? 'Петрова приехала. Настя и Света на улице. Юристка тоже хочет к ним. Эле надо прикрывать всех.' : 'Петрова приехала с улицы и просит отчёт по клиентам.',
-      entity: p,
-      duration: 35,
-      log: 'Аня Петрова зашла в офис. Уровень контроля вырос.',
-      choices: [
-        { text: smoking ? '«Настя со Светой обсуждают учебный вопрос»' : 'Показать краткий отчёт', fn: () => { const ok = !smoking || Math.random() > .25; applyStats(ok ? { reputation: 5, nerves: -4, suspicion: -5 } : { reputation: -4, nerves: -6, suspicion: 8 }); log(ok ? 'Петрова приняла версию. Эля прикрыла команду.' : 'Петрова что-то заподозрила.'); } },
-        { text: 'Сказать: «Сейчас позову Настю»', fn: () => { if (smoking) { applyStats({ suspicion: 12, nerves: -8, chaos: 7 }); log('Настя не появилась. Петрова поняла слишком много.'); } else { applyStats({ nerves: -2, reputation: 2 }); log('Настя вышла и забрала удар на себя.'); } } },
-        { text: 'Сделать вид, что звонит телефон', fn: () => { applyStats({ nerves: -3, chaos: Math.random() > .5 ? -2 : 4 }); log('Манёвр рискованный, но иногда работает.'); } }
-      ],
-      onExpire: () => { state.petrovnaPresent = false; setTarget(p, places.outside.x, places.outside.z + .8); setTimeout(() => { p.visible = false; }, 2600); }
-    });
-  }
-
-  function findNearestInteractive() {
-    let best = null;
-    let bestD = 1.55;
-    state.clients.forEach(c => {
-      const d = distance(player.position, c.group.position);
-      if (d < bestD) { best = { type: 'client', client: c, group: c.group }; bestD = d; }
-    });
-    state.events.forEach(ev => {
-      if (!ev.entity || !ev.entity.visible) return;
-      const d = distance(player.position, ev.entity.position);
-      if (d < bestD) { best = { type: 'event', event: ev }; bestD = d; }
-    });
-    return best;
-  }
-
-  function updateNearestHint() {
-    const near = findNearestInteractive();
-    if (near) {
-      hintEl.style.display = 'block';
-      hintEl.textContent = near.type === 'client' ? 'E / ДЕЛО: обработать клиента' : 'E / ДЕЛО: решить событие';
-    } else {
-      hintEl.style.display = 'none';
-    }
-  }
-
-  function interact() {
-    if (interactionLock || ended || paused) return;
-    const near = findNearestInteractive();
-    if (!near) { log('Рядом нет задачи. Вернись к ресепшну или проверь значки !'); return; }
-    if (near.type === 'client') openClientDialog(near.client);
-    if (near.type === 'event') openEventDialog(near.event);
-  }
-
-  function openClientDialog(client) {
-    interactionLock = true;
-    const req = client.request;
-    dialogTitle.textContent = `Клиент: ${req.name}`;
-    dialogText.textContent = `${req.desc}\nВозраст: ${req.age}. Уровень: ${levelLabel(req.level)}. Время: ${req.time}. Выбери группу.`;
-    choicesEl.innerHTML = '';
-    const opts = shuffle([...groupOptions]).slice(0, 4);
-    if (!opts.some(o => isCorrectGroup(o, req))) {
-      const correct = groupOptions.find(o => isCorrectGroup(o, req));
-      opts[Math.floor(Math.random() * opts.length)] = correct;
-    }
-    opts.forEach(opt => {
-      const btn = document.createElement('button');
-      btn.className = 'choice';
-      btn.type = 'button';
-      btn.textContent = opt.text;
-      btn.onclick = () => {
-        const correct = isCorrectGroup(opt, req);
-        if (correct) {
-          const paid = Math.random() < (req.mood === 'discount' ? .45 : .62);
-          stats.records += 1;
-          if (paid) stats.payments += 1;
-          applyStats({ reputation: 4, nerves: -2, chaos: -2 });
-          log(paid ? 'Клиент записан и оплатил. Эля плюс один день к выживанию.' : 'Клиент записан на пробное. Оплаты пока нет, но шанс есть.');
+    function updateClients(dt) {
+      for (let i = state.clients.length - 1; i >= 0; i--) {
+        const c = state.clients[i];
+        if (c.userData.clientState === "walking") {
+          const target = c.userData.target;
+          const dir = target.clone().sub(c.position);
+          dir.y = 0;
+          const dist = dir.length();
+          if (dist > .08) {
+            dir.normalize();
+            c.position.addScaledVector(dir, dt * 2.4);
+            c.rotation.y = Math.atan2(dir.x, dir.z);
+          } else {
+            c.userData.clientState = "waiting";
+            c.userData.patience = CLIENT_PATIENCE;
+            showToast(`${c.userData.template.title} ждёт на ресепшене.`);
+          }
         } else {
-          applyStats({ reputation: -8, nerves: -4, chaos: 5 });
-          stats.lost += Math.random() < .45 ? 1 : 0;
-          log('Группа выбрана плохо. Клиент недоволен и начал сомневаться.');
+          c.userData.patience -= dt;
+          const label = c.userData.label;
+          if (label) label.el.textContent = `Клиент ⏳ ${Math.ceil(c.userData.patience)}с`;
+          if (c.userData.patience <= 0) {
+            loseClient(c, "Клиент устал ждать и ушёл.");
+            i--;
+          }
         }
-        client.served = true;
-        scene.remove(client.group);
-        state.clients = state.clients.filter(c => c !== client);
-        closeDialog();
-      };
-      choicesEl.appendChild(btn);
-    });
-    const cancel = document.createElement('button');
-    cancel.className = 'choice'; cancel.type = 'button'; cancel.textContent = 'Попросить подождать';
-    cancel.onclick = () => { client.patience -= 8; applyStats({ nerves: -1 }); closeDialog(); };
-    choicesEl.appendChild(cancel);
-    choiceModal.classList.add('active');
-  }
-
-  function openEventDialog(ev) {
-    interactionLock = true;
-    dialogTitle.textContent = ev.title;
-    dialogText.textContent = ev.text;
-    choicesEl.innerHTML = '';
-    ev.choices.forEach(choice => {
-      const btn = document.createElement('button');
-      btn.className = 'choice';
-      btn.type = 'button';
-      btn.textContent = choice.text;
-      btn.onclick = () => {
-        choice.fn();
-        resolveEvent(ev);
-        closeDialog();
-      };
-      choicesEl.appendChild(btn);
-    });
-    choiceModal.classList.add('active');
-  }
-
-  function resolveEvent(ev) {
-    if (ev.entity?.userData?.icon) ev.entity.userData.icon.visible = false;
-    state.events = state.events.filter(e => e !== ev);
-  }
-
-  function closeDialog() {
-    interactionLock = false;
-    choiceModal.classList.remove('active');
-  }
-
-  function isCorrectGroup(opt, req) {
-    if (req.level === 'special') return opt.level === 'special';
-    if (req.level === 'exam') return opt.level === 'exam';
-    return req.age >= opt.ageMin && req.age <= opt.ageMax && opt.level === req.level && opt.time === req.time;
-  }
-
-  function levelLabel(level) {
-    return ({ starter: 'с нуля', beginner: 'beginner', elementary: 'elementary', exam: 'экзамен', special: 'особый запрос' })[level] || level;
-  }
-
-  function applyStats(delta) {
-    Object.entries(delta).forEach(([k, v]) => {
-      if (typeof stats[k] !== 'number') return;
-      stats[k] += v;
-    });
-    stats.nerves = clamp(stats.nerves, 0, 100);
-    stats.reputation = clamp(stats.reputation, 0, 100);
-    stats.chaos = clamp(stats.chaos, 0, 120);
-    stats.suspicion = clamp(stats.suspicion, 0, 100);
-    stats.cover = clamp(stats.cover, 0, 120);
-  }
-
-  function checkEndConditions() {
-    if (stats.nerves <= 0) endGame('nerves');
-    else if (stats.reputation <= 0) endGame('reputation');
-    else if (stats.chaos >= 110) endGame('chaos');
-    else if (state.dayMinutes >= 20 * 60) endGame('day');
-  }
-
-  function endGame(reason) {
-    if (ended) return;
-    ended = true;
-    hud.style.display = 'none';
-    hintEl.style.display = 'none';
-    let title = 'Смена закончена';
-    let text = '';
-    const good = stats.records >= 10 && stats.payments >= 5 && stats.reputation >= 70 && stats.nerves >= 30 && stats.chaos <= 60;
-    const secret = stats.records >= 12 && stats.payments >= 6 && stats.lost === 0 && stats.nerves >= 70 && stats.chaos <= 35 && stats.zavhozOk >= 1 && stats.pashaFixed >= 1;
-    if (reason === 'nerves') {
-      title = 'Эля морально не выжила';
-      text = 'Слишком много клиентов, разговоров юристки, Пашиных отвлечений и внезапных проверок. Эля больше не реагирует на слово «пробное».';
-    } else if (reason === 'reputation') {
-      title = 'Репутация YESCOMPANY упала';
-      text = 'Клиенты ушли, Палади сказала лишнее, Рита Баранова страдала, а ресепшн не выдержал давления.';
-    } else if (reason === 'chaos') {
-      title = 'Офисный апокалипсис';
-      text = 'Завхоз потерял ключи, Паша трётся не там, юристка в туалете, клиенты у входа, Голубев уже всё видел.';
-    } else if (secret) {
-      title = 'Секретный финал: Эля стала директором на один день';
-      text = 'Голубев посмотрел на цифры, на спокойный ресепшн и молча передал Эле воображаемый бейдж директора. Настеныш кивнула. YESCOMPANY под контролем.';
-    } else if (good) {
-      title = 'Эля спасла YESCOMPANY';
-      text = 'День закрыт. Клиенты записаны, оплаты есть, Петрова почти ничего не поняла, Голубев доволен, Настя сказала: «Эля, ты сегодня вывезла».';
-    } else {
-      title = 'День закрыт, но какой ценой';
-      text = 'YESCOMPANY прожила ещё один день. Записи есть, но Эля теперь смотрит в одну точку и слышит голос: «А пробное бесплатное?»';
+      }
     }
-    document.getElementById('endTitle').textContent = title;
-    document.getElementById('endText').textContent = `${text}\n\nИтог: записи ${stats.records}, оплаты ${stats.payments}, ушедшие клиенты ${stats.lost}, хаос ${Math.round(stats.chaos)}, нервы ${Math.round(stats.nerves)}.`;
-    document.getElementById('barNerves').style.width = `${stats.nerves}%`;
-    document.getElementById('barRep').style.width = `${stats.reputation}%`;
-    document.getElementById('barChaos').style.width = `${Math.min(100, stats.chaos)}%`;
-    endScreen.classList.add('active');
-  }
 
-  function openTablet() {
-    const text = [
-      `Время: ${formatTime(state.dayMinutes)}.`,
-      `Задачи дня: 10 записей, 5 оплат, не потерять больше 3 клиентов.`,
-      `Карта: вход снизу → ресепшн → коридор. Слева туалеты и логопед. Сверху кабинеты №1–3, юрист, старший препод. Справа кабинет №4 и кладовка завхоза.`,
-      `Текущие показатели: нервы ${Math.round(stats.nerves)}, репутация ${Math.round(stats.reputation)}, хаос ${Math.round(stats.chaos)}, подозрение Петровой ${Math.round(stats.suspicion)}.`,
-      `Активные события: ${state.events.length ? state.events.map(e => e.title).join('; ') : 'пока тихо, но это ненадолго'}.`
-    ].join('\n\n');
-    tabletText.textContent = text;
-    tabletModal.classList.add('active');
-    interactionLock = true;
-  }
-
-  function closeTabletModal() {
-    tabletModal.classList.remove('active');
-    interactionLock = false;
-  }
-
-  function updateHud() {
-    document.getElementById('timeText').textContent = formatTime(state.dayMinutes);
-    document.getElementById('nervesText').textContent = Math.round(stats.nerves);
-    document.getElementById('repText').textContent = Math.round(stats.reputation);
-    document.getElementById('chaosText').textContent = Math.round(stats.chaos);
-    document.getElementById('recordsText').textContent = stats.records;
-    document.getElementById('paymentsText').textContent = stats.payments;
-    document.getElementById('lostText').textContent = stats.lost;
-  }
-
-  function log(msg) {
-    logEl.textContent = msg;
-  }
-
-  function render() {
-    renderer.render(scene, camera);
-  }
-
-  function onResize() {
-    if (!renderer || !camera) return;
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-  }
-
-  function formatTime(mins) {
-    mins = Math.min(20 * 60, Math.max(0, Math.floor(mins)));
-    const h = String(Math.floor(mins / 60)).padStart(2, '0');
-    const m = String(mins % 60).padStart(2, '0');
-    return `${h}:${m}`;
-  }
-
-  function distance(a, b) {
-    const ax = a.x, az = a.z;
-    const bx = b.x, bz = b.z;
-    return Math.hypot(ax - bx, az - bz);
-  }
-
-  function clamp(v, min, max) { return Math.min(max, Math.max(min, v)); }
-
-  function shuffle(arr) {
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
+    function updateProblems(dt) {
+      for (const npc of state.npcs) {
+        const p = npc.userData.problem;
+        if (!p) continue;
+        npc.userData.problemTimer -= dt;
+        if (npc.userData.label) npc.userData.label.el.textContent = `! ${npc.userData.name} ${Math.ceil(npc.userData.problemTimer)}с`;
+        if (npc.userData.problemTimer <= 0) {
+          applyProblemPenalty(npc);
+          clearProblem(npc);
+        }
+      }
     }
-    return arr;
-  }
 
-  // Controls
-  window.addEventListener('keydown', (e) => {
-    const codes = ['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'];
-    if (codes.includes(e.code)) { keys.add(e.code); e.preventDefault(); }
-    if (e.code === 'KeyE' || e.key.toLowerCase() === 'у') { e.preventDefault(); interact(); }
-    if (e.code === 'Tab') { e.preventDefault(); openTablet(); }
-    if (e.code === 'Escape') { if (choiceModal.classList.contains('active')) closeDialog(); else if (tabletModal.classList.contains('active')) closeTabletModal(); else togglePause(); }
-  });
-  window.addEventListener('keyup', (e) => keys.delete(e.code));
+    function maybeMovePasha(dt) {
+      const pasha = getNpc("Паша");
+      if (!pasha || pasha.userData.problem) return;
+      const t = state.elapsed;
+      const flirtTarget = Math.sin(t / 9) > .65 ? getNpc("Настя") : Math.sin(t / 11) < -.72 ? getNpc("Даша") : null;
+      const target = flirtTarget ? flirtTarget.position : pashaHome;
+      const dir = target.clone().sub(pasha.position);
+      dir.y = 0;
+      if (dir.length() > .2) {
+        dir.normalize();
+        pasha.position.addScaledVector(dir, dt * 1.35);
+        pasha.rotation.y = Math.atan2(dir.x, dir.z);
+      }
+    }
 
-  document.getElementById('pauseBtn').addEventListener('click', togglePause);
-  document.getElementById('tabletBtn').addEventListener('click', openTablet);
-  document.getElementById('mobileAction').addEventListener('click', interact);
-  document.getElementById('mobileTablet').addEventListener('click', openTablet);
-  closeTablet.addEventListener('click', closeTabletModal);
-  startBtn.addEventListener('click', startGame);
-  restartBtn.addEventListener('click', () => { endScreen.classList.remove('active'); hud.style.display = 'grid'; resetGame(); ended = false; });
+    function spawnClient() {
+      if (!state.running || state.clients.length >= 4) return;
+      const template = pick(clientPool);
+      const mesh = createClientMesh();
+      mesh.position.set(-.6 + Math.random() * 1.2, 0, -7.7);
+      mesh.userData.kind = "client";
+      mesh.userData.template = template;
+      mesh.userData.clientState = "walking";
+      mesh.userData.target = new THREE.Vector3(-1.7 + Math.random() * 3.4, 0, 1.15 + Math.random() * .7);
+      mesh.userData.patience = CLIENT_PATIENCE;
+      scene.add(mesh);
+      makeLabel(mesh, "Клиент идёт", "client");
+      state.clients.push(mesh);
+    }
 
-  function togglePause() {
-    if (!gameStarted || ended || interactionLock) return;
-    paused = !paused;
-    document.getElementById('pauseBtn').textContent = paused ? '▶' : 'Ⅱ';
-    log(paused ? 'Пауза. Даже YESCOMPANY иногда нужно замереть.' : 'Пауза снята. Хаос продолжает работу.');
-  }
+    function loseClient(client, reason) {
+      removeClient(client);
+      changeStats({ lost: 1, rep: -10, nerves: -6, chaos: 4 });
+      showToast(reason);
+    }
 
-  const joyBase = document.getElementById('joyBase');
-  const joyKnob = document.getElementById('joyKnob');
-  joyBase.addEventListener('pointerdown', (e) => {
-    joystick.active = true; joystick.id = e.pointerId; joyBase.setPointerCapture(e.pointerId); updateJoystick(e);
-  });
-  joyBase.addEventListener('pointermove', (e) => { if (joystick.active && e.pointerId === joystick.id) updateJoystick(e); });
-  joyBase.addEventListener('pointerup', resetJoystick);
-  joyBase.addEventListener('pointercancel', resetJoystick);
+    function removeClient(client) {
+      const idx = state.clients.indexOf(client);
+      if (idx >= 0) state.clients.splice(idx, 1);
+      removeObject(client);
+      removeLabel(client);
+    }
 
-  function updateJoystick(e) {
-    const rect = joyBase.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    let dx = (e.clientX - cx) / (rect.width / 2);
-    let dy = (e.clientY - cy) / (rect.height / 2);
-    const len = Math.hypot(dx, dy);
-    if (len > 1) { dx /= len; dy /= len; }
-    joystick.dx = dx; joystick.dy = dy;
-    joyKnob.style.transform = `translate(${dx * 34}px, ${dy * 34}px)`;
-  }
+    function updateNearest() {
+      let nearest = null;
+      let best = Infinity;
+      const candidates = [...state.clients, ...state.npcs.filter(n => n.userData.problem || n.userData.name === "Настя")];
+      for (const obj of candidates) {
+        const dist = flatDistance(player.position, obj.position);
+        if (dist < INTERACT_RADIUS && dist < best) {
+          best = dist;
+          nearest = obj;
+        }
+      }
+      state.nearest = nearest;
+      if (nearest) {
+        const type = nearest.userData.kind === "client" ? "клиент" : nearest.userData.name;
+        hintEl.textContent = `Действие: ${type}`;
+        hintEl.classList.add("show");
+      } else {
+        hintEl.classList.remove("show");
+      }
+    }
 
-  function resetJoystick() {
-    joystick.active = false; joystick.dx = 0; joystick.dy = 0; joyKnob.style.transform = 'translate(0, 0)';
-  }
-})();
-</script>
+    function interact() {
+      if (!state.running || state.modalOpen) return;
+      updateNearest();
+      const target = state.nearest;
+      if (!target) {
+        showToast("Рядом никого, кому срочно нужна Эля.");
+        return;
+      }
+      if (target.userData.kind === "client") openClientDialog(target);
+      else if (target.userData.problem) openProblemDialog(target);
+      else if (target.userData.name === "Настя") openNastyaDialog();
+    }
+
+    function openClientDialog(client) {
+      const t = client.userData.template;
+      const correct = groups.find(g => g.id === t.correct);
+      const wrong = shuffle(groups.filter(g => g.id !== t.correct)).slice(0, 3);
+      const options = shuffle([correct, ...wrong]);
+      openModal(
+        t.title,
+        `${t.line}<br><br><b>Возраст:</b> ${t.age} лет<br><b>Уровень:</b> ${t.level}<br><b>Удобное время:</b> ${t.time}<br><br>Выбери подходящую группу.`,
+        options.map(g => ({
+          label: `${g.title} · ${g.teacher}`,
+          action: () => {
+            if (g.id === t.correct) {
+              const paid = Math.random() < .56 || state.stats.records % 3 === 1;
+              changeStats({ records: 1, payments: paid ? 1 : 0, rep: 5, nerves: -1, chaos: -2 });
+              removeClient(client);
+              showToast(paid ? "Клиент записался и внёс оплату." : "Клиент записался на пробное занятие.");
+            } else {
+              removeClient(client);
+              changeStats({ lost: 1, rep: -12, nerves: -7, chaos: 5 });
+              showToast("Группа не подошла. Клиент ушёл думать и не вернулся.");
+            }
+            closeModal();
+          }
+        }))
+      );
+    }
+
+    function openProblemDialog(npc) {
+      const p = npc.userData.problem;
+      openModal(p.title, p.text, p.choices.map(choice => ({
+        label: choice.label,
+        action: () => {
+          choice.effect();
+          clearProblem(npc);
+          closeModal();
+        }
+      })));
+    }
+
+    function openNastyaDialog() {
+      openModal("Настя", "Старший администратор быстро оценивает обстановку. Можно попросить помощь, но идеального спокойствия в YESCOMPANY не существует.", [
+        { label: "Попросить Настю успокоить очередь", action: () => { changeStats({ rep: 4, nerves: 5, chaos: -5 }); showToast("Настя забрала часть хаоса на себя."); closeModal(); } },
+        { label: "Спросить, что делать дальше", action: () => { showToast("Настя: сначала клиенты, потом пожары, потом всё остальное."); closeModal(); } },
+        { label: "Сказать: «Настя, у нас опять ситуация»", action: () => { changeStats({ nerves: 3 }); if (Math.random() < .45) triggerRandomProblem(); showToast("Настя кивнула. И, кажется, добавила ещё одну задачу."); closeModal(); } }
+      ]);
+    }
+
+    function triggerRandomProblem() {
+      const names = ["Палади", "Анна", "Паша", "Саша", "Голубев", "Аня Петрова", "Света", "Барсукова"];
+      const available = names.filter(name => {
+        const npc = getNpc(name);
+        return npc && !npc.userData.problem;
+      });
+      if (!available.length) return;
+      triggerProblem(pick(available));
+    }
+
+    function triggerProblem(name) {
+      const npc = getNpc(name);
+      if (!npc || npc.userData.problem) return;
+      const problem = makeProblem(name, npc);
+      npc.userData.problem = problem;
+      npc.userData.problemTimer = problem.time;
+      if (npc.userData.label) {
+        npc.userData.label.el.classList.add("problem");
+        npc.userData.label.el.textContent = `! ${name}`;
+      }
+      showToast(problem.alert);
+    }
+
+    function makeProblem(name, npc) {
+      const mk = (title, text, time, alert, choices, penalty) => ({ title, text, time, alert, choices, penalty });
+      if (name === "Палади") return mk(
+        "Палади резко ответила родителю",
+        "Палади сказала клиенту что-то слишком прямолинейное. Родитель уже меняется в лице. Нужно вмешаться, пока репутация не ушла вместе с клиентом.",
+        34,
+        "Палади спорит с клиентом.",
+        [
+          { label: "«Давайте я спокойно объясню программу»", effect: () => { changeStats({ rep: 8, chaos: -7, nerves: -3 }); showToast("Клиент выдохнул. Палади временно нейтрализована."); } },
+          { label: "«Палади, выйдите на минутку»", effect: () => { changeStats({ rep: 4, chaos: -10, nerves: -8 }); showToast("Сработало, но в воздухе стало холоднее."); } },
+          { label: "«Ну она просто такая»", effect: () => { changeStats({ rep: -14, lost: 1, nerves: -9, chaos: 7 }); showToast("Клиент не оценил честность."); } }
+        ],
+        { rep: -12, lost: 1, nerves: -8, chaos: 10 }
+      );
+      if (name === "Анна") return mk(
+        "Юрист Анна держит договор",
+        "Договор нужен срочно, но Анна уже начала рассказ про новую покупку и мужа. Если задержаться, клиент устанет ждать.",
+        36,
+        "Анна зовёт в кабинет с договором.",
+        [
+          { label: "«Анна, договор очень срочно, Голубев ждёт»", effect: () => { changeStats({ rep: 5, payments: Math.random() < .35 ? 1 : 0, nerves: -2 }); showToast("Договор получен без лекции на 40 минут."); } },
+          { label: "Выслушать про покупку", effect: () => { changeStats({ nerves: -12, chaos: 7 }); showToast("Анна довольна. Время не согласно."); } },
+          { label: "Сказать, что муж у неё молодец, и забрать договор", effect: () => { changeStats({ rep: 4, nerves: -4, chaos: -3 }); showToast("Тактическая дипломатия сработала."); } }
+        ],
+        { rep: -7, nerves: -9, chaos: 8 }
+      );
+      if (name === "Паша") return mk(
+        "CRM зависла, Паша отвлёкся",
+        "Паша пришёл чинить систему, но уже смотрит в сторону Насти и Даши. Без CRM записи идут на салфетках.",
+        38,
+        "Паша нужен у сломанной CRM.",
+        [
+          { label: "«Паша, сначала CRM, потом флирт»", effect: () => { changeStats({ chaos: -13, rep: 5, nerves: -2 }); showToast("CRM ожила. Паша делает вид, что так и планировал."); pashaHome.copy(npc.position); } },
+          { label: "Позвать Настю, чтобы Паша ускорился", effect: () => { changeStats({ chaos: -9, nerves: -4, rep: 3 }); showToast("Способ сомнительный, но техника заработала."); } },
+          { label: "Попросить Сашу помочь с компьютером", effect: () => { changeStats({ chaos: 15, nerves: -10, rep: -4 }); showToast("Теперь не работает ещё и мышка."); } }
+        ],
+        { rep: -8, nerves: -8, chaos: 14 }
+      );
+      if (name === "Саша") return mk(
+        "Саша должен подготовить кабинет",
+        "Нужно поставить четыре стула и убрать коробки. Саша принёс один стул и задумался, зачем он пришёл.",
+        40,
+        "Саша опять делает что-то непонятное.",
+        [
+          { label: "«Саша, четыре стула в кабинет Даши. Сейчас.»", effect: () => { changeStats({ chaos: -8, nerves: -2, rep: 3 }); showToast("Саша почти всё понял. Уже прогресс."); } },
+          { label: "Молча переставить всё самой", effect: () => { changeStats({ nerves: -12, chaos: -5 }); showToast("Кабинет готов, Эля морально нет."); } },
+          { label: "Отправить Сашу искать ключи", effect: () => { changeStats({ chaos: 10, nerves: -6 }); showToast("Саша ушёл. Ключи тоже в опасности."); } }
+        ],
+        { rep: -5, nerves: -7, chaos: 13 }
+      );
+      if (name === "Голубев") return mk(
+        "Голубев требует показатели",
+        "Директор вышел из кабинета и хочет понять, сколько сегодня записей и оплат. Нужно ответить уверенно.",
+        32,
+        "Голубев вышел из кабинета.",
+        [
+          { label: "Показать записи, оплаты и план на вечер", effect: () => { const good = state.stats.records >= Math.floor(state.elapsed / 35); changeStats(good ? { rep: 8, nerves: 4, chaos: -4 } : { nerves: -10, rep: -6, chaos: 5 }); showToast(good ? "Голубев доволен динамикой." : "Голубев сказал слово «продажи». Стало тревожно."); } },
+          { label: "Сказать: «Сейчас уточню у Насти»", effect: () => { changeStats({ nerves: -5, rep: -2 }); showToast("Ответ рабочий, но не вдохновляющий."); } },
+          { label: "Сделать вид, что звонит клиент", effect: () => { changeStats({ nerves: -7, chaos: 5 }); showToast("Манёвр рискованный. Голубев всё понял."); } }
+        ],
+        { rep: -8, nerves: -12, chaos: 6 }
+      );
+      if (name === "Аня Петрова") return mk(
+        "Аня Петрова дала срочное поручение",
+        "Замдиректора просит заполнить таблицу, проверить оплату и не потерять клиента. Всё, конечно, срочно.",
+        35,
+        "Аня Петрова зовёт с новой задачей.",
+        [
+          { label: "Сразу отметить оплату и кратко отчитаться", effect: () => { changeStats({ rep: 6, payments: Math.random() < .28 ? 1 : 0, nerves: -4, chaos: -3 }); showToast("Задача закрыта. Аня Петрова временно спокойна."); } },
+          { label: "Сказать: «Это надо было сделать вчера?»", effect: () => { changeStats({ nerves: -8, rep: -3, chaos: 5 }); showToast("Вопрос риторический. Ответ неприятный."); } },
+          { label: "Перекинуть задачу на Сашу", effect: () => { changeStats({ chaos: 12, rep: -6, nerves: -6 }); showToast("Таблица теперь называется table_final_final_2.xlsx."); } }
+        ],
+        { rep: -7, nerves: -9, chaos: 7 }
+      );
+      if (name === "Света") return mk(
+        "Света недовольна расписанием",
+        "Старший преподаватель заметила окно, странную группу и кабинет, где почему-то стоит коробка Саши. Нужно быстро согласовать учебную часть.",
+        36,
+        "Света требует разобраться с расписанием.",
+        [
+          { label: "Переставить кабинет и подтвердить группу", effect: () => { changeStats({ rep: 7, chaos: -6, nerves: -3 }); showToast("Света приняла решение. Учебная часть спасена."); } },
+          { label: "Сказать: «Так в таблице стоит»", effect: () => { changeStats({ nerves: -10, chaos: 6, rep: -4 }); showToast("Таблица не защитила Элю."); } },
+          { label: "Позвать Дашу на замену", effect: () => { changeStats({ rep: 3, chaos: -3, nerves: -5 }); showToast("Даша согласилась, но с выражением лица 'ну конечно'."); } }
+        ],
+        { rep: -8, nerves: -8, chaos: 8 }
+      );
+      return mk(
+        "Барсукова грустит перед занятием",
+        "Барсукова сидит в кабинете и выглядит так, будто понедельник случился во все дни недели. Ей нужно помочь собраться на занятие.",
+        38,
+        "Барсукова грустит в кабинете.",
+        [
+          { label: "Поддержать и принести план занятия", effect: () => { changeStats({ rep: 6, nerves: -2, chaos: -4 }); showToast("Барсукова чуть ожила. Занятие состоится."); } },
+          { label: "Сказать: «Ну вы держитесь»", effect: () => { changeStats({ nerves: -4, rep: -4 }); showToast("Фраза не помогла никому."); } },
+          { label: "Перенести группу к Свете", effect: () => { changeStats({ rep: 3, chaos: 3, nerves: -6 }); showToast("Группа спасена, Света уже смотрит вопросительно."); } }
+        ],
+        { rep: -7, nerves: -7, chaos: 9 }
+      );
+    }
+
+    function applyProblemPenalty(npc) {
+      const p = npc.userData.problem;
+      if (!p) return;
+      changeStats(p.penalty);
+      showToast(`${npc.userData.name}: проблема не решена вовремя.`);
+    }
+
+    function clearProblem(npc) {
+      npc.userData.problem = null;
+      npc.userData.problemTimer = 0;
+      if (npc.userData.label) {
+        npc.userData.label.el.classList.remove("problem");
+        npc.userData.label.el.textContent = npc.userData.name;
+      }
+    }
+
+    function openModal(title, text, choices) {
+      state.modalOpen = true;
+      modalTitle.textContent = title;
+      modalText.innerHTML = text;
+      modalChoices.innerHTML = "";
+      for (const choice of choices) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "choice";
+        btn.textContent = choice.label;
+        btn.addEventListener("click", choice.action);
+        modalChoices.appendChild(btn);
+      }
+      modal.classList.add("active");
+    }
+
+    function closeModal() {
+      state.modalOpen = false;
+      modal.classList.remove("active");
+    }
+
+    function toggleTablet() {
+      if (!state.running || state.modalOpen) return;
+      state.tabletOpen = !state.tabletOpen;
+      tabletPanel.classList.toggle("active", state.tabletOpen);
+    }
+
+    function changeStats(delta) {
+      if (delta.nerves) state.stats.nerves = clamp(state.stats.nerves + delta.nerves, 0, 100);
+      if (delta.rep) state.stats.rep = clamp(state.stats.rep + delta.rep, 0, 100);
+      if (delta.chaos) state.stats.chaos = clamp(state.stats.chaos + delta.chaos, 0, 100);
+      if (delta.records) state.stats.records += delta.records;
+      if (delta.payments) state.stats.payments += delta.payments;
+      if (delta.lost) state.stats.lost += delta.lost;
+      updateHud();
+    }
+
+    function updateHud() {
+      const s = state.stats;
+      ui.nerves.textContent = Math.round(s.nerves);
+      ui.rep.textContent = Math.round(s.rep);
+      ui.chaos.textContent = Math.round(s.chaos);
+      ui.records.textContent = s.records;
+      ui.payments.textContent = s.payments;
+      ui.lost.textContent = s.lost;
+      ui.clock.textContent = formatClock();
+    }
+
+    function formatClock() {
+      const progress = clamp(state.elapsed / GAME_DURATION, 0, 1);
+      const minutes = Math.floor(9 * 60 + progress * 11 * 60);
+      const h = Math.floor(minutes / 60);
+      const m = minutes % 60;
+      return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+    }
+
+    function endGame(reason) {
+      if (!state.running) return;
+      state.running = false;
+      hud.style.display = "none";
+      mission.style.display = "none";
+      joystick.style.display = "none";
+      actionStack.style.display = "none";
+      hintEl.classList.remove("show");
+      tabletPanel.classList.remove("active");
+      closeModal();
+
+      const s = state.stats;
+      let title = "День закрыт, но какой ценой";
+      let text = "YESCOMPANY дожила до конца смены. Эля больше не реагирует на слово «пробное», но офис стоит.";
+
+      if (reason !== "time") {
+        title = "Офисный апокалипсис";
+        if (reason === "nerves") text = "Нервы Эли закончились раньше рабочего дня. Настя молча поняла всё по лицу.";
+        if (reason === "rep") text = "Репутация YESCOMPANY не выдержала потока странных решений и недовольных клиентов.";
+        if (reason === "chaos") text = "Хаос достиг 100%. Паша пропал, Саша что-то несёт, Палади спорит, Анна рассказывает про покупки.";
+        if (reason === "lost") text = "Слишком много клиентов ушло. Голубев вышел из кабинета, и воздух стал плотнее.";
+      } else if (s.records >= 12 && s.payments >= 7 && s.rep >= 78 && s.nerves >= 55 && s.chaos <= 45 && s.lost === 0) {
+        title = "Секретный финал: Эля стала директором на один день";
+        text = "Голубев посмотрел на результаты и молча передал Эле воображаемый бейдж директора. Настя кивнула. YESCOMPANY была под контролем.";
+      } else if (s.records >= 10 && s.payments >= 5 && s.rep >= 70 && s.nerves >= 30 && s.chaos < 70 && s.lost <= 3) {
+        title = "Эля спасла YESCOMPANY";
+        text = "Клиенты записаны, оплаты собраны, офис не развалился. Настя сказала: «Эля, ты сегодня вывезла».";
+      } else if (s.records >= 7 && s.rep >= 45) {
+        title = "YESCOMPANY выжила на честном слове";
+        text = "День закрыт. Не идеально, но школа продолжает работать. Эля заслужила тишину и чай.";
+      }
+
+      ui.endTitle.textContent = title;
+      ui.endText.textContent = text;
+      ui.endStats.innerHTML = [
+        ["Записано детей", `${s.records}`],
+        ["Получено оплат", `${s.payments}`],
+        ["Клиентов ушло", `${s.lost}`],
+        ["Нервы Эли", `${Math.round(s.nerves)}%`],
+        ["Репутация", `${Math.round(s.rep)}%`],
+        ["Хаос офиса", `${Math.round(s.chaos)}%`]
+      ].map(([a,b]) => `<div class="rule"><b>${a}</b><br>${b}</div>`).join("");
+      endScreen.classList.add("active");
+    }
+
+    function showToast(text) {
+      toastEl.textContent = text;
+      toastEl.classList.add("show");
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => toastEl.classList.remove("show"), 2300);
+    }
+
+    function updateLabels() {
+      for (const item of state.labels) {
+        const pos = item.object.position.clone();
+        pos.y += item.type === "client" ? 1.8 : 1.72;
+        const screen = pos.project(camera);
+        const x = (screen.x * .5 + .5) * window.innerWidth;
+        const y = (-screen.y * .5 + .5) * window.innerHeight;
+        const visible = screen.z < 1 && screen.z > -1;
+        item.el.style.display = visible ? "block" : "none";
+        item.el.style.left = `${x}px`;
+        item.el.style.top = `${y}px`;
+      }
+    }
+
+    function removeLabel(object) {
+      const item = object.userData.label;
+      if (!item) return;
+      item.el.remove();
+      const idx = state.labels.indexOf(item);
+      if (idx >= 0) state.labels.splice(idx, 1);
+      object.userData.label = null;
+    }
+
+    function removeObject(obj) {
+      scene.remove(obj);
+      obj.traverse(child => {
+        if (child.geometry) child.geometry.dispose();
+        if (child.material) {
+          if (Array.isArray(child.material)) child.material.forEach(m => m.dispose());
+          else child.material.dispose();
+        }
+      });
+    }
+
+    function onJoyStart(event) {
+      if (!state.running) return;
+      state.joy.active = true;
+      state.joy.id = event.pointerId;
+      const rect = joystick.getBoundingClientRect();
+      state.joy.baseX = rect.left + rect.width / 2;
+      state.joy.baseY = rect.top + rect.height / 2;
+      joystick.setPointerCapture?.(event.pointerId);
+      updateJoy(event.clientX, event.clientY);
+    }
+
+    function onJoyMove(event) {
+      if (!state.joy.active || event.pointerId !== state.joy.id) return;
+      updateJoy(event.clientX, event.clientY);
+    }
+
+    function onJoyEnd(event) {
+      if (!state.joy.active || event.pointerId !== state.joy.id) return;
+      state.joy.active = false;
+      state.joy.id = null;
+      state.joy.x = 0;
+      state.joy.y = 0;
+      joystickKnob.style.transform = "translate(-50%, -50%)";
+    }
+
+    function updateJoy(x, y) {
+      const dx = x - state.joy.baseX;
+      const dy = y - state.joy.baseY;
+      const max = 42;
+      const len = Math.hypot(dx, dy);
+      const scale = len > max ? max / len : 1;
+      const nx = dx * scale;
+      const ny = dy * scale;
+      state.joy.x = nx / max;
+      state.joy.y = ny / max;
+      joystickKnob.style.transform = `translate(calc(-50% + ${nx}px), calc(-50% + ${ny}px))`;
+    }
+
+    function getNpc(name) {
+      return state.npcs.find(n => n.userData.name === name);
+    }
+
+    function flatDistance(a, b) {
+      return Math.hypot(a.x - b.x, a.z - b.z);
+    }
+
+    function clamp(v, min, max) {
+      return Math.max(min, Math.min(max, v));
+    }
+
+    function pick(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function shuffle(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+  </script>
 </body>
 </html>
