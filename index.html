@@ -119,7 +119,7 @@
   <section id="startScreen" class="screen active">
     <div class="panel">
       <h1>1 день в YESCOMPANY</h1>
-      <p class="subtitle">3D-симулятор рабочего дня. Ты играешь за Элю, администратора языковой школы. Клиенты хотят записать детей на английский, сотрудники создают хаос, директор требует результат. Нужно выжить до 20:00.</p>
+      <p class="subtitle">3D-симулятор рабочего дня. Ты играешь за Элю, администратора YESCOMPANY. Клиенты хотят записать детей на английский, сотрудники создают хаос, Голубев иногда приезжает с улицы, а Петрова проверяет порядок. Нужно выжить до 20:00.</p>
       <div class="rules">
         <div class="rule"><b>Клиенты</b><br>Подходи к родителям и подбирай правильную группу по возрасту, уровню и времени.</div>
         <div class="rule"><b>Сотрудники</b><br>Если над NPC горит «!», значит опять что-то случилось. Лучше решить быстро.</div>
@@ -169,8 +169,8 @@
     }
 
     const GAME_DURATION = 240;
-    const MAP_LIMIT_X = 12;
-    const MAP_LIMIT_Z = 8;
+    const MAP_LIMIT_X = 10.4;
+    const MAP_LIMIT_Z = 5.6;
     const INTERACT_RADIUS = 2.05;
     const CLIENT_PATIENCE = 42;
 
@@ -189,8 +189,61 @@
       { title: "Мама после другой школы", age: 11, level: "есть база", time: "16:00", correct: "junior-elementary", line: "Мы уже ходили, но хотим нормальную программу." },
       { title: "Родитель ОГЭ", age: 15, level: "ОГЭ", time: "15:30", correct: "exam", line: "Надо подготовиться к экзамену, желательно вчера." },
       { title: "Бабушка разговорного клуба", age: 13, level: "говорить", time: "19:00", correct: "speaking", line: "Главное, чтобы ребёнок начал говорить, а не только тетрадь заполнял." },
-      { title: "Мама уверенного школьника", age: 10, level: "уверенная база", time: "18:30", correct: "preteen", line: "Ребёнок не новичок, нужна группа посильнее." }
+      { title: "Мама уверенного школьника", age: 10, level: "уверенная база", time: "18:30", correct: "preteen", line: "Ребёнок не новичок, нужна группа посильнее." },
+      { title: "Мама Риты Барановой", age: 8, level: "начинающий", time: "18:00", correct: "junior-beginner", line: "Рита Баранова часто отпрашивается в туалет, но английский ей всё равно нужен." },
+      { title: "Странный клиент с блокнотом", age: 6, level: "с нуля", time: "17:00", correct: "kids-start", line: "Он записывает каждое слово Эли и спрашивает, можно ли ребёнку учить английский во сне." },
+      { title: "Папа с невозможным запросом", age: 15, level: "ОГЭ", time: "15:30", correct: "exam", line: "Хочет ОГЭ, разговорный, олимпиаду и чтобы недорого. Желательно за две недели." }
     ];
+
+
+
+    const OFFICE_MAP = {
+      version: "yescompany-map-v1",
+      unit: "meters",
+      coordinateSystem: "x вправо, z вниз, начало координат в левом верхнем углу карты",
+      settings: { width: 19.5, height: 10, grid: 0.5 },
+      rooms: [
+        { name: "Раздевалка", type: "utility", x: 1, z: 3, w: 2.5, d: 1, color: "#ded7c9" },
+        { name: "Туалет 1", type: "toilet", x: 1, z: 4, w: 1.5, d: 1, color: "#d7efff" },
+        { name: "Туалет 2", type: "toilet", x: 1, z: 5, w: 1.5, d: 1, color: "#d7efff" },
+        { name: "Малый коридор", type: "corridor", x: 2.5, z: 4, w: 1, d: 2, color: "#fff0b8" },
+        { name: "Кабинет логопеда", type: "office", x: 1, z: 6, w: 2.5, d: 2.5, color: "#ffe0e9" },
+        { name: "Кабинет №1", type: "classroom", x: 3.5, z: 0.5, w: 5, d: 2.5, color: "#e8e1ff" },
+        { name: "Кабинет №2", type: "classroom", x: 8.5, z: 0.5, w: 2, d: 2.5, color: "#e8e1ff" },
+        { name: "Кабинет №3", type: "classroom", x: 10.5, z: 0.5, w: 2, d: 2.5, color: "#e8e1ff" },
+        { name: "Каб. юриста", type: "office", x: 12.5, z: 0.5, w: 2, d: 2.5, color: "#ffe0e9" },
+        { name: "Каб. ст. преп", type: "office", x: 14.5, z: 0.5, w: 2, d: 2.5, color: "#ffe0e9" },
+        { name: "Клад. уборки", type: "utility", x: 16.5, z: 3, w: 1, d: 1, color: "#ded7c9" },
+        { name: "Коридор", type: "corridor", x: 3.5, z: 3, w: 13, d: 1, color: "#fff0b8" },
+        { name: "Ресепшн", type: "reception", x: 3.5, z: 4, w: 4.5, d: 4.5, color: "#b9f3e3" },
+        { name: "Зона ожидания", type: "waiting", x: 7, z: 4, w: 1, d: 4.5, color: "#d9ecff" },
+        { name: "Кабинет №4", type: "classroom", x: 8, z: 4, w: 2.5, d: 4.5, color: "#e8e1ff" },
+        { name: "Кладовка завхоза", type: "utility", x: 10.5, z: 4, w: 2.5, d: 4.5, color: "#ded7c9" }
+      ],
+      doors: [
+        { name: "Вход", type: "entry", x: 5.15, z: 5.85, w: 1, d: 0.12, color: "#31d0aa" },
+        { name: "Дверь в коридор", type: "door", x: 2.35, z: 1.6, w: 0.12, d: 0.55, color: "#2a2f3a" }
+      ],
+      props: [
+        { name: "Стойка ресепшн", type: "desk", x: 4.5, z: 6.5, w: 0.5, d: 2, color: "#7c4a2d" }
+      ],
+      npcs: [
+        { name: "Эля", type: "playerSpawn", x: 4, z: 7, color: "#38bdf8" },
+        { name: "Настя", type: "npcSpawn", x: 4, z: 8, color: "#ff8ac7" }
+      ]
+    };
+
+    function mapPoint(x, z) {
+      return new THREE.Vector3(x - OFFICE_MAP.settings.width / 2, 0, z - OFFICE_MAP.settings.height / 2);
+    }
+
+    function mapRectCenter(item) {
+      return new THREE.Vector3(item.x + item.w / 2 - OFFICE_MAP.settings.width / 2, 0, item.z + item.d / 2 - OFFICE_MAP.settings.height / 2);
+    }
+
+    function hexToNumber(hex) {
+      return Number(String(hex).replace("#", "0x"));
+    }
 
     const colors = {
       elya: 0x38bdf8,
@@ -289,7 +342,7 @@
     };
 
     let player;
-    const pashaHome = new THREE.Vector3(-1.4, 0, -2.1);
+    const pashaHome = mapPoint(5.7, 9.1);
 
     initWorld();
     fillSchedule();
@@ -298,7 +351,7 @@
 
     function initWorld() {
       const floorMat = new THREE.MeshStandardMaterial({ color: 0x273244, roughness: 0.9, metalness: 0.02 });
-      const floor = new THREE.Mesh(new THREE.BoxGeometry(25, 0.28, 17), floorMat);
+      const floor = new THREE.Mesh(new THREE.BoxGeometry(OFFICE_MAP.settings.width + 1.2, 0.28, OFFICE_MAP.settings.height + 1.2), floorMat);
       floor.position.y = -0.16;
       floor.receiveShadow = true;
       scene.add(floor);
@@ -308,105 +361,71 @@
       addFurniture();
 
       player = createPerson("Эля", colors.elya, 0xffffff, 1.05);
-      player.position.set(-4.4, 0, -5.7);
+      player.position.copy(mapPoint(4, 7));
       player.userData.kind = "player";
       scene.add(player);
       makeLabel(player, "Эля", "player");
 
-      createNpc("Настя", colors.nastya, -5.2, -5.2, "Старший администратор");
-      createNpc("Света", colors.sveta, 7.15, 5.45, "Старший преподаватель");
-      createNpc("Даша", colors.dasha, -5.25, 5.45, "Преподаватель");
-      createNpc("Голубев", colors.golubev, 4.45, 5.45, "Директор");
-      createNpc("Аня Петрова", colors.anyaPetrova, -3.1, -5.4, "Замдиректора");
-      createNpc("Палади", colors.paladi, -1.35, 5.45, "Новый преподаватель");
-      createNpc("Барсукова", colors.barsukova, 1.55, 5.45, "Грустный преподаватель");
-      createNpc("Анна", colors.annaLawyer, 4.45, 6.65, "Юрист");
-      createNpc("Паша", colors.pasha, -1.4, -2.1, "Приходящий айтишник");
-      createNpc("Саша", colors.sasha, 9.55, -5.7, "Завхоз");
+      createNpc("Настя", colors.nastya, ...mapPoint(4, 8).toArray().filter((_, i) => i !== 1), "Старший администратор");
+      createNpc("Света", colors.sveta, ...mapPoint(15.55, 1.85).toArray().filter((_, i) => i !== 1), "Старший преподаватель");
+      createNpc("Даша", colors.dasha, ...mapPoint(5.2, 3.55).toArray().filter((_, i) => i !== 1), "Преподаватель");
+      createNpc("Голубев", colors.golubev, ...mapPoint(5.8, 9.35).toArray().filter((_, i) => i !== 1), "Директор, приезжает с улицы");
+      createNpc("Аня Петрова", colors.anyaPetrova, ...mapPoint(6.6, 9.35).toArray().filter((_, i) => i !== 1), "Замдиректора, приезжает с улицы");
+      createNpc("Палади", colors.paladi, ...mapPoint(9.45, 1.85).toArray().filter((_, i) => i !== 1), "Новый преподаватель");
+      createNpc("Барсукова", colors.barsukova, ...mapPoint(11.45, 1.85).toArray().filter((_, i) => i !== 1), "Грустный преподаватель");
+      createNpc("Анна", colors.annaLawyer, ...mapPoint(13.45, 1.85).toArray().filter((_, i) => i !== 1), "Юрист");
+      createNpc("Паша", colors.pasha, ...mapPoint(5.7, 9.1).toArray().filter((_, i) => i !== 1), "Приходящий айтишник");
+      createNpc("Завхоз", colors.sasha, ...mapPoint(11.8, 6.2).toArray().filter((_, i) => i !== 1), "Завхоз");
     }
 
     function addGridLines() {
-      const lineMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.09 });
-      for (let x = -12; x <= 12; x += 2) {
-        const geo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(x, 0.01, -8), new THREE.Vector3(x, 0.01, 8)]);
+      const lineMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.08 });
+      const minX = -OFFICE_MAP.settings.width / 2;
+      const maxX = OFFICE_MAP.settings.width / 2;
+      const minZ = -OFFICE_MAP.settings.height / 2;
+      const maxZ = OFFICE_MAP.settings.height / 2;
+      for (let x = minX; x <= maxX + 0.001; x += OFFICE_MAP.settings.grid) {
+        const geo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(x, 0.01, minZ), new THREE.Vector3(x, 0.01, maxZ)]);
         scene.add(new THREE.Line(geo, lineMat));
       }
-      for (let z = -8; z <= 8; z += 2) {
-        const geo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-12, 0.01, z), new THREE.Vector3(12, 0.01, z)]);
+      for (let z = minZ; z <= maxZ + 0.001; z += OFFICE_MAP.settings.grid) {
+        const geo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(minX, 0.01, z), new THREE.Vector3(maxX, 0.01, z)]);
         scene.add(new THREE.Line(geo, lineMat));
       }
     }
 
     function addOfficeZones() {
-      // Карта перерисована по схеме пользователя, но 3D-стиль первой версии сохранён.
-      // Координаты: X — слева направо, Z — снизу вверх. Вход снизу.
-      zone("Ресепшн", -3.75, -3.15, 8.1, 9.35, 0x2dd4bf);
-      zone("Зона ожидания", 1.15, -3.15, 1.35, 9.35, 0x60a5fa);
-      zone("Кабинет №4", 4.65, -3.15, 4.35, 9.35, 0x94a3b8);
-      zone("Кладовка завхоза", 9.55, -3.15, 5.0, 9.35, 0x8b5cf6);
+      for (const room of OFFICE_MAP.rooms) {
+        const center = mapRectCenter(room);
+        zone(room.name, center.x, center.z, room.w, room.d, hexToNumber(room.color));
+        outlineRoom(room);
+      }
 
-      zone("Раздевалка", -10.1, 4.35, 4.05, 1.75, 0xa78bfa);
-      zone("Туалет №1", -11.1, 2.45, 2.0, 1.25, 0x38bdf8);
-      zone("Туалет №2", -11.1, 1.15, 2.0, 1.25, 0x38bdf8);
-      zone("Коридор", -8.95, 1.8, 1.6, 3.9, 0x64748b);
-      zone("Кабинет логопеда", -10.1, -4.35, 4.05, 7.35, 0xf59e0b);
+      for (const door of OFFICE_MAP.doors) {
+        const center = mapRectCenter(door);
+        const mat = new THREE.MeshStandardMaterial({ color: hexToNumber(door.color), roughness: .55, emissive: door.type === "entry" ? 0x0f766e : 0x000000, emissiveIntensity: door.type === "entry" ? .25 : 0 });
+        const mesh = new THREE.Mesh(new THREE.BoxGeometry(Math.max(door.w, .18), .08, Math.max(door.d, .18)), mat);
+        mesh.position.set(center.x, .08, center.z);
+        scene.add(mesh);
+        const label = makeBillboardText(door.name, hexToNumber(door.color));
+        label.scale.set(1.75, .44, 1);
+        label.position.set(center.x, .12, center.z - .25);
+        scene.add(label);
+      }
+    }
 
-      zone("КОРИДОР", 1.05, 2.65, 20.0, 1.1, 0x64748b);
-      zone("Кабинет №1", -5.25, 5.75, 4.9, 4.7, 0x93c5fd);
-      zone("Кабинет №2", -1.35, 5.75, 2.9, 4.7, 0x93c5fd);
-      zone("Кабинет №3", 1.55, 5.75, 2.9, 4.7, 0x93c5fd);
-      zone("Каб. юриста", 4.45, 5.75, 2.9, 4.7, 0xfacc15);
-      zone("Каб. ст. преп.", 7.25, 5.75, 2.7, 4.7, 0xf87171);
-      zone("Клад. уборки", 10.55, 3.15, 2.05, 1.55, 0x22c55e);
-
-      const h = (x1, x2, z) => wall((x1 + x2) / 2, 0, Math.abs(x2 - x1), 0.12, z);
-      const v = (x, z1, z2) => wall(x, 0, 0.12, Math.abs(z2 - z1), (z1 + z2) / 2);
-
-      // Наружные стены сложной формы.
-      h(-12.1, -8.1, 5.25);       // верх раздевалки
-      h(-7.85, 8.6, 8.1);         // верх верхнего ряда кабинетов
-      h(9.55, 11.6, 3.95);        // верх кладовки уборки
-      h(-12.1, -1.05, -8.1);      // низ, слева от входа
-      h(1.05, 12.1, -8.1);        // низ, справа от входа
-      v(-12.1, -8.1, 5.25);       // левый край
-      v(12.1, -8.1, 2.15);        // правый край нижнего блока
-      v(11.6, 2.35, 3.95);        // правый край кладовки уборки
-      v(8.6, 3.2, 8.1);           // правый край кабинета ст. препода
-      v(-7.85, 3.2, 8.1);         // левый край кабинета №1
-
-      // Верхний ряд кабинетов и двери в коридор.
-      h(-7.85, -6.35, 3.2);
-      h(-5.35, -3.05, 3.2);
-      h(-2.05, -0.35, 3.2);
-      h(0.65, 1.95, 3.2);
-      h(2.95, 4.55, 3.2);
-      h(5.55, 6.9, 3.2);
-      h(7.75, 8.6, 3.2);
-      v(-2.75, 3.2, 8.1);
-      v(0.1, 3.2, 8.1);
-      v(3.0, 3.2, 8.1);
-      v(5.9, 3.2, 8.1);
-
-      // Длинный коридор: нижняя граница с проходами в ресепшн, зону ожидания, кабинет №4 и кладовку.
-      h(-8.1, -5.6, 2.15);
-      h(-3.6, 0.35, 2.15);
-      h(1.9, 3.5, 2.15);
-      h(5.25, 7.2, 2.15);
-      h(8.6, 12.1, 2.15);
-
-      // Левый блок: раздевалка, туалеты, вертикальный коридор, логопед.
-      h(-12.1, -8.1, 3.45);       // низ раздевалки / верх туалетного блока
-      h(-12.1, -10.05, 2.05);     // раздел туалет 1 / туалет 2
-      h(-12.1, -8.1, 0.75);       // низ туалетов / верх логопеда
-      v(-10.05, 0.75, 3.45);      // стена между туалетами и малым коридором
-      v(-8.1, 0.75, 5.25);        // правый край левого блока
-      v(-8.1, -8.1, -0.6);        // правый край кабинета логопеда
-      h(-12.1, -8.1, -0.6);       // верх логопеда
-
-      // Ресепшн, зона ожидания, кабинет №4 и кладовка завхоза.
-      v(0.45, -8.1, 2.15);        // граница ресепшн / зона ожидания
-      v(1.85, -8.1, 2.15);        // граница зона ожидания / кабинет №4
-      v(7.05, -8.1, 2.15);        // граница кабинет №4 / кладовка завхоза
+    function outlineRoom(room) {
+      const x1 = room.x - OFFICE_MAP.settings.width / 2;
+      const x2 = room.x + room.w - OFFICE_MAP.settings.width / 2;
+      const z1 = room.z - OFFICE_MAP.settings.height / 2;
+      const z2 = room.z + room.d - OFFICE_MAP.settings.height / 2;
+      const cx = (x1 + x2) / 2;
+      const cz = (z1 + z2) / 2;
+      const color = room.type === "corridor" || room.type === "waiting" || room.type === "reception" ? 0x334155 : 0x475569;
+      wall(cx, 0, room.w, 0.055, z1, color, .34);
+      wall(cx, 0, room.w, 0.055, z2, color, .34);
+      wall(x1, 0, 0.055, room.d, cz, color, .34);
+      wall(x2, 0, 0.055, room.d, cz, color, .34);
     }
 
     function zone(name, x, z, w, d, color) {
@@ -419,48 +438,39 @@
       scene.add(sign);
     }
 
-    function wall(x, y, w, d, z) {
-      const mat = new THREE.MeshStandardMaterial({ color: 0x4b5563, roughness: .8 });
-      const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, 1.1, d), mat);
-      mesh.position.set(x, 0.52, z);
+    function wall(x, y, w, d, z, color = 0x4b5563, height = 1.1) {
+      const mat = new THREE.MeshStandardMaterial({ color, roughness: .8 });
+      const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, height, d), mat);
+      mesh.position.set(x, height / 2, z);
       mesh.castShadow = true;
       mesh.receiveShadow = true;
       scene.add(mesh);
     }
 
     function addFurniture() {
-      // Ресепшн: вертикальная стойка ближе к левой части, как на схеме.
-      desk(-5.9, -5.15, .8, 2.8, 0x795548);
-      desk(-4.65, -6.8, 2.0, .8, 0x6d4c41);
+      for (const prop of OFFICE_MAP.props) {
+        const center = mapRectCenter(prop);
+        if (prop.type === "desk") desk(center.x, center.z, prop.w, prop.d, hexToNumber(prop.color));
+      }
 
-      // Зона ожидания.
-      for (let i = 0; i < 5; i++) chair(.85, -6.2 + i * 1.1, 0x2563eb);
-      for (let i = 0; i < 4; i++) chair(1.45, -5.65 + i * 1.1, 0x2563eb);
+      // Зона ожидания
+      for (let i = 0; i < 4; i++) chair(mapPoint(7.48, 4.75 + i * .78).x, mapPoint(7.48, 4.75 + i * .78).z, 0x2563eb);
 
-      // Учебные кабинеты сверху.
-      desk(-5.25, 6.4, 2.0, .8, 0x374151);
-      desk(-1.35, 6.4, 1.6, .75, 0x374151);
-      desk(1.55, 6.4, 1.6, .75, 0x374151);
-      desk(4.45, 6.4, 1.6, .75, 0x6d4c41);
-      desk(7.25, 6.4, 1.6, .75, 0x6d4c41);
-      for (let i = 0; i < 4; i++) chair(-6.2 + i * .65, 5.25, 0x475569);
-      for (let i = 0; i < 3; i++) chair(-2.05 + i * .6, 5.25, 0x475569);
-      for (let i = 0; i < 3; i++) chair(.85 + i * .6, 5.25, 0x475569);
+      // Учебные кабинеты
+      for (let i = 0; i < 5; i++) chair(mapPoint(4.35 + i * .7, 1.75).x, mapPoint(4.35 + i * .7, 1.75).z, 0x475569);
+      for (let i = 0; i < 3; i++) chair(mapPoint(8.9 + i * .45, 1.7).x, mapPoint(8.9 + i * .45, 1.7).z, 0xb91c1c);
+      for (let i = 0; i < 3; i++) chair(mapPoint(10.9 + i * .45, 1.7).x, mapPoint(10.9 + i * .45, 1.7).z, 0x64748b);
+      for (let i = 0; i < 6; i++) chair(mapPoint(8.65 + (i % 2) * .75, 4.8 + Math.floor(i / 2) * .75).x, mapPoint(8.65 + (i % 2) * .75, 4.8 + Math.floor(i / 2) * .75).z, 0x7c3aed);
 
-      // Кабинет №4 и логопед.
-      desk(4.65, -2.7, 2.2, .8, 0x374151);
-      for (let i = 0; i < 5; i++) chair(3.4 + i * .6, -4.1, 0x475569);
-      desk(-10.1, -4.4, 1.9, .8, 0x4c1d95);
-      chair(-10.8, -5.35, 0x475569);
-      chair(-9.35, -5.35, 0x475569);
+      // Кабинеты сотрудников
+      desk(mapPoint(13.15, 1.75).x, mapPoint(13.15, 1.75).z, 1.25, .55, 0xf59e0b);
+      desk(mapPoint(15.15, 1.75).x, mapPoint(15.15, 1.75).z, 1.25, .55, 0xfacc15);
 
-      // Кладовки и завхозный хаос.
-      propBox(8.3, -6.8, 0x9ca3af);
-      propBox(9.2, -6.1, 0xf97316);
-      propBox(10.2, -5.45, 0x22c55e);
-      propBox(11.0, -6.9, 0x94a3b8);
-      propBox(10.55, 3.2, 0x22c55e);
-      propBox(11.2, 3.45, 0x9ca3af);
+      // Завхоз и кладовки
+      propBox(mapPoint(11.25, 5.1).x, mapPoint(11.25, 5.1).z, 0x9ca3af);
+      propBox(mapPoint(12.05, 6.1).x, mapPoint(12.05, 6.1).z, 0xf97316);
+      propBox(mapPoint(10.9, 7.3).x, mapPoint(10.9, 7.3).z, 0x22c55e);
+      propBox(mapPoint(16.85, 3.42).x, mapPoint(16.85, 3.42).z, 0xcbd5e1);
     }
 
     function desk(x, z, w, d, color) {
@@ -665,6 +675,7 @@
       updateProblems(dt);
       updateNearest();
       maybeMovePasha(dt);
+      maybeMoveVisitors(dt);
 
       state.spawnTimer -= dt;
       if (state.spawnTimer <= 0) {
@@ -773,15 +784,48 @@
       }
     }
 
+
+
+    function maybeMoveVisitors(dt) {
+      const golubev = getNpc("Голубев");
+      if (golubev && golubev.userData.problem) {
+        moveNpcToward(golubev, mapPoint(13.6, 3.25), dt, 1.55);
+      }
+
+      const petrova = getNpc("Аня Петрова");
+      if (petrova && petrova.userData.problem) {
+        moveNpcToward(petrova, mapPoint(6.1, 7.2), dt, 1.55);
+      }
+
+      const anna = getNpc("Анна");
+      if (anna && !anna.userData.problem) {
+        const t = Math.sin(state.elapsed / 13);
+        const target = t > .55 ? mapPoint(5.2, 6.8) : t < -.65 ? mapPoint(2.0, 4.5) : anna.userData.home;
+        moveNpcToward(anna, target, dt, 1.05);
+      }
+    }
+
+    function moveNpcToward(npc, target, dt, speed) {
+      const dir = target.clone().sub(npc.position);
+      dir.y = 0;
+      if (dir.length() > .14) {
+        dir.normalize();
+        npc.position.addScaledVector(dir, dt * speed);
+        npc.rotation.y = Math.atan2(dir.x, dir.z);
+      }
+    }
+
+
     function spawnClient() {
       if (!state.running || state.clients.length >= 4) return;
       const template = pick(clientPool);
       const mesh = createClientMesh();
-      mesh.position.set(-.6 + Math.random() * 1.2, 0, -7.7);
+      const spawn = mapPoint(5.55 + Math.random() * .9, 9.55);
+      mesh.position.copy(spawn);
       mesh.userData.kind = "client";
       mesh.userData.template = template;
       mesh.userData.clientState = "walking";
-      mesh.userData.target = new THREE.Vector3(-1.7 + Math.random() * 3.4, 0, 1.15 + Math.random() * .7);
+      mesh.userData.target = mapPoint(4.85 + Math.random() * .75, 6.55 + Math.random() * .7);
       mesh.userData.patience = CLIENT_PATIENCE;
       scene.add(mesh);
       makeLabel(mesh, "Клиент идёт", "client");
@@ -883,7 +927,7 @@
     }
 
     function triggerRandomProblem() {
-      const names = ["Палади", "Анна", "Паша", "Саша", "Голубев", "Аня Петрова", "Света", "Барсукова"];
+      const names = ["Палади", "Анна", "Паша", "Завхоз", "Голубев", "Аня Петрова", "Света", "Барсукова", "Даша"];
       const available = names.filter(name => {
         const npc = getNpc(name);
         return npc && !npc.userData.problem;
@@ -907,6 +951,18 @@
 
     function makeProblem(name, npc) {
       const mk = (title, text, time, alert, choices, penalty) => ({ title, text, time, alert, choices, penalty });
+      if (name === "Даша") return mk(
+        "Даше опять досталась странная группа",
+        "Даша пришла на занятие и сразу поняла: дети сегодня слишком шумные, слишком медленные и, по её словам, «какие-то глупые». Нужно спасти урок и не дать ей уйти в сарказм.",
+        36,
+        "Даша недовольна группой детей.",
+        [
+          { label: "«Даша, ты вывезешь. Я уберу самых шумных в зону ожидания»", effect: () => { changeStats({ rep: 6, chaos: -5, nerves: -3 }); showToast("Даша закатила глаза, но занятие началось."); } },
+          { label: "Сказать детям, что Даша сегодня в режиме босса", effect: () => { changeStats({ rep: 3, chaos: -4, nerves: -2 }); showToast("Дети притихли. Даша почти довольна."); } },
+          { label: "Оставить Дашу одну с группой", effect: () => { changeStats({ rep: -7, chaos: 8, nerves: -5 }); showToast("Из кабинета донеслось: «ну вы серьёзно?»"); } }
+        ],
+        { rep: -7, nerves: -6, chaos: 9 }
+      );
       if (name === "Палади") return mk(
         "Палади резко ответила родителю",
         "Палади сказала клиенту что-то слишком прямолинейное. Родитель уже меняется в лице. Нужно вмешаться, пока репутация не ушла вместе с клиентом.",
@@ -920,10 +976,10 @@
         { rep: -12, lost: 1, nerves: -8, chaos: 10 }
       );
       if (name === "Анна") return mk(
-        "Юрист Анна держит договор",
-        "Договор нужен срочно, но Анна уже начала рассказ про новую покупку и мужа. Если задержаться, клиент устанет ждать.",
+        "Юристка Анна мешает на ресепшне",
+        "Договор нужен срочно, но Анна пришла на ресепшн, начала рассказ про новую покупку и мужа, а потом ещё намекнула, что неплохо бы сходить покурить за компанию.",
         36,
-        "Анна зовёт в кабинет с договором.",
+        "Анна подошла на ресепшн с разговором.",
         [
           { label: "«Анна, договор очень срочно, Голубев ждёт»", effect: () => { changeStats({ rep: 5, payments: Math.random() < .35 ? 1 : 0, nerves: -2 }); showToast("Договор получен без лекции на 40 минут."); } },
           { label: "Выслушать про покупку", effect: () => { changeStats({ nerves: -12, chaos: 7 }); showToast("Анна довольна. Время не согласно."); } },
@@ -939,49 +995,49 @@
         [
           { label: "«Паша, сначала CRM, потом флирт»", effect: () => { changeStats({ chaos: -13, rep: 5, nerves: -2 }); showToast("CRM ожила. Паша делает вид, что так и планировал."); pashaHome.copy(npc.position); } },
           { label: "Позвать Настю, чтобы Паша ускорился", effect: () => { changeStats({ chaos: -9, nerves: -4, rep: 3 }); showToast("Способ сомнительный, но техника заработала."); } },
-          { label: "Попросить Сашу помочь с компьютером", effect: () => { changeStats({ chaos: 15, nerves: -10, rep: -4 }); showToast("Теперь не работает ещё и мышка."); } }
+          { label: "Попросить завхоза помочь с компьютером", effect: () => { changeStats({ chaos: 15, nerves: -10, rep: -4 }); showToast("Теперь не работает ещё и мышка."); } }
         ],
         { rep: -8, nerves: -8, chaos: 14 }
       );
-      if (name === "Саша") return mk(
-        "Саша должен подготовить кабинет",
-        "Нужно поставить четыре стула и убрать коробки. Саша принёс один стул и задумался, зачем он пришёл.",
+      if (name === "Завхоз") return mk(
+        "Завхоз должен подготовить кабинет",
+        "Нужно поставить четыре стула и убрать коробки. Завхоз принёс один стул и задумался, зачем он пришёл.",
         40,
-        "Саша опять делает что-то непонятное.",
+        "Завхоз опять делает что-то непонятное.",
         [
-          { label: "«Саша, четыре стула в кабинет Даши. Сейчас.»", effect: () => { changeStats({ chaos: -8, nerves: -2, rep: 3 }); showToast("Саша почти всё понял. Уже прогресс."); } },
+          { label: "«Завхоз, четыре стула в кабинет Даши. Сейчас.»", effect: () => { changeStats({ chaos: -8, nerves: -2, rep: 3 }); showToast("Завхоз почти всё понял. Уже прогресс."); } },
           { label: "Молча переставить всё самой", effect: () => { changeStats({ nerves: -12, chaos: -5 }); showToast("Кабинет готов, Эля морально нет."); } },
-          { label: "Отправить Сашу искать ключи", effect: () => { changeStats({ chaos: 10, nerves: -6 }); showToast("Саша ушёл. Ключи тоже в опасности."); } }
+          { label: "Отправить завхоза искать ключи", effect: () => { changeStats({ chaos: 10, nerves: -6 }); showToast("Завхоз ушёл. Ключи тоже в опасности."); } }
         ],
         { rep: -5, nerves: -7, chaos: 13 }
       );
       if (name === "Голубев") return mk(
-        "Голубев требует показатели",
-        "Директор вышел из кабинета и хочет понять, сколько сегодня записей и оплат. Нужно ответить уверенно.",
+        "Голубев приехал и идёт к юристу",
+        "Голубев приехал с улицы, идёт в кабинет к юристке и по пути спрашивает показатели. Настю он уже успел назвать Настёныш. Нужно ответить уверенно.",
         32,
-        "Голубев вышел из кабинета.",
+        "Голубев приехал с улицы.",
         [
-          { label: "Показать записи, оплаты и план на вечер", effect: () => { const good = state.stats.records >= Math.floor(state.elapsed / 35); changeStats(good ? { rep: 8, nerves: 4, chaos: -4 } : { nerves: -10, rep: -6, chaos: 5 }); showToast(good ? "Голубев доволен динамикой." : "Голубев сказал слово «продажи». Стало тревожно."); } },
+          { label: "Показать записи, оплаты и план на вечер", effect: () => { const good = state.stats.records >= Math.floor(state.elapsed / 35); changeStats(good ? { rep: 8, nerves: 4, chaos: -4 } : { nerves: -10, rep: -6, chaos: 5 }); showToast(good ? "Голубев доволен динамикой и позвал Настю Настёнышем." : "Голубев сказал слово «продажи». Стало тревожно."); } },
           { label: "Сказать: «Сейчас уточню у Насти»", effect: () => { changeStats({ nerves: -5, rep: -2 }); showToast("Ответ рабочий, но не вдохновляющий."); } },
           { label: "Сделать вид, что звонит клиент", effect: () => { changeStats({ nerves: -7, chaos: 5 }); showToast("Манёвр рискованный. Голубев всё понял."); } }
         ],
         { rep: -8, nerves: -12, chaos: 6 }
       );
       if (name === "Аня Петрова") return mk(
-        "Аня Петрова дала срочное поручение",
-        "Замдиректора просит заполнить таблицу, проверить оплату и не потерять клиента. Всё, конечно, срочно.",
+        "Аня Петрова приехала с улицы",
+        "Замдиректора приехала неожиданно. В этот момент Настя и Света, конечно, курят на улице, и Эле приходится прикрывать ресепшн, учебную часть и видимость порядка.",
         35,
-        "Аня Петрова зовёт с новой задачей.",
+        "Аня Петрова приехала с проверкой.",
         [
-          { label: "Сразу отметить оплату и кратко отчитаться", effect: () => { changeStats({ rep: 6, payments: Math.random() < .28 ? 1 : 0, nerves: -4, chaos: -3 }); showToast("Задача закрыта. Аня Петрова временно спокойна."); } },
+          { label: "Прикрыть Настю и Свету: «Они решают учебный вопрос»", effect: () => { changeStats({ rep: 6, payments: Math.random() < .28 ? 1 : 0, nerves: -5, chaos: -3 }); showToast("Аня Петрова временно поверила. Курилка спасена."); } },
           { label: "Сказать: «Это надо было сделать вчера?»", effect: () => { changeStats({ nerves: -8, rep: -3, chaos: 5 }); showToast("Вопрос риторический. Ответ неприятный."); } },
-          { label: "Перекинуть задачу на Сашу", effect: () => { changeStats({ chaos: 12, rep: -6, nerves: -6 }); showToast("Таблица теперь называется table_final_final_2.xlsx."); } }
+          { label: "Перекинуть задачу на завхоза", effect: () => { changeStats({ chaos: 12, rep: -6, nerves: -6 }); showToast("Таблица теперь называется table_final_final_2.xlsx."); } }
         ],
         { rep: -7, nerves: -9, chaos: 7 }
       );
       if (name === "Света") return mk(
         "Света недовольна расписанием",
-        "Старший преподаватель заметила окно, странную группу и кабинет, где почему-то стоит коробка Саши. Нужно быстро согласовать учебную часть.",
+        "Старший преподаватель заметила окно, странную группу и кабинет, где почему-то стоит коробка завхоза. Нужно быстро согласовать учебную часть.",
         36,
         "Света требует разобраться с расписанием.",
         [
@@ -1096,8 +1152,8 @@
         title = "Офисный апокалипсис";
         if (reason === "nerves") text = "Нервы Эли закончились раньше рабочего дня. Настя молча поняла всё по лицу.";
         if (reason === "rep") text = "Репутация YESCOMPANY не выдержала потока странных решений и недовольных клиентов.";
-        if (reason === "chaos") text = "Хаос достиг 100%. Паша пропал, Саша что-то несёт, Палади спорит, Анна рассказывает про покупки.";
-        if (reason === "lost") text = "Слишком много клиентов ушло. Голубев вышел из кабинета, и воздух стал плотнее.";
+        if (reason === "chaos") text = "Хаос достиг 100%. Паша пропал, завхоз что-то несёт, Палади спорит, Анна рассказывает про покупки.";
+        if (reason === "lost") text = "Слишком много клиентов ушло. Голубев приехал с улицы, и воздух стал плотнее.";
       } else if (s.records >= 12 && s.payments >= 7 && s.rep >= 78 && s.nerves >= 55 && s.chaos <= 45 && s.lost === 0) {
         title = "Секретный финал: Эля стала директором на один день";
         text = "Голубев посмотрел на результаты и молча передал Эле воображаемый бейдж директора. Настя кивнула. YESCOMPANY была под контролем.";
